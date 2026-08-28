@@ -1,8 +1,7 @@
-# SIH26132 — 
+
 # KisanSetu: A Web-Based, Voice-Enabled Market Intelligence & Farmer–Buyer Linkage Platform
 
-**Theme:** Agriculture, FoodTech & Rural Development
-**Problem Statement:** Strengthening market linkages and price discovery for farmers
+
 
 ---
 
