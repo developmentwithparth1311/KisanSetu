@@ -1,0 +1,67 @@
+[
+  {
+    "id": "b1",
+    "name": "Shree Balaji Agro Traders",
+    "type": "Wholesale Distributor",
+    "location": "Vashi APMC, Navi Mumbai",
+    "trustScore": 94,
+    "rating": 4.8,
+    "completedTrades": 142,
+    "paymentSpeed": "Instant Escrow",
+    "cropsWanted": ["tomato", "onion", "potato"],
+    "avatar": "🏢",
+    "verified": true
+  },
+  {
+    "id": "b2",
+    "name": "KisanFresh Supply Chain Ltd.",
+    "type": "Retail Chain Aggregator",
+    "location": "Pune Logistics Hub",
+    "trustScore": 96,
+    "rating": 4.9,
+    "completedTrades": 310,
+    "paymentSpeed": "Direct Bank/Escrow",
+    "cropsWanted": ["tomato", "potato", "onion"],
+    "avatar": "🚚",
+    "verified": true
+  },
+  {
+    "id": "b3",
+    "name": "Nashik Global AgroExports",
+    "type": "Exporter (UAE & Gulf)",
+    "location": "Nashik MIDC",
+    "trustScore": 91,
+    "rating": 4.7,
+    "completedTrades": 88,
+    "paymentSpeed": "Escrow Pre-Funded",
+    "cropsWanted": ["onion", "wheat", "soybean"],
+    "avatar": "✈️",
+    "verified": true
+  },
+  {
+    "id": "b4",
+    "name": "MahaLaxmi Flour Mills",
+    "type": "Processing Unit",
+    "location": "Indore Industrial Area",
+    "trustScore": 89,
+    "rating": 4.6,
+    "completedTrades": 64,
+    "paymentSpeed": "Escrow Guaranteed",
+    "cropsWanted": ["wheat", "soybean"],
+    "avatar": "🏭",
+    "verified": true
+  },
+  {
+    "id": "b5",
+    "name": "Sahyadri Cold Chain & Foods",
+    "type": "Cold Storage & Trading",
+    "location": "Niphad, Nashik",
+    "trustScore": 84,
+    "rating": 4.4,
+    "completedTrades": 45,
+    "paymentSpeed": "Standard Escrow",
+    "cropsWanted": ["tomato", "potato"],
+    "avatar": "❄️",
+    "verified": true
+  }
+]

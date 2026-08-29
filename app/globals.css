@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 20% 98%;      /* warm crisp neutral #FAFAF8 */
+    --foreground: 24 10% 10%;      /* deep readable slate #1C1917 */
+    --card: 0 0% 100%;             /* pure white #FFFFFF */
+    --card-foreground: 24 10% 10%;
+    --primary: 142 71% 29%;        /* rich agricultural emerald #15803D */
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 15% 94%;       /* soft sand #F4F1EA */
+    --secondary-foreground: 24 10% 15%;
+    --muted: 40 10% 92%;
+    --muted-foreground: 24 5% 45%; /* crisp secondary text */
+    --accent: 38 92% 50%;          /* warm amber gold */
+    --accent-foreground: 24 10% 10%;
+    --border: 35 15% 90%;          /* crisp border #E7E3DC */
+    --input: 35 15% 90%;
+    --ring: 142 71% 29%;
+    --radius: 1rem;
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    letter-spacing: -0.01em;
+  }
+}
+
+/* Glassmorphic header utility */
+.glass-header {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* Custom minimal scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* Laser scan animation */
+@keyframes laser-glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(34, 197, 94, 1);
+  }
+}
+
+.laser-line {
+  animation: laser-glow 1.5s infinite alternate;
+}

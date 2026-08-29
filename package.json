@@ -1,17 +1,32 @@
 {
-  "name": "kisansetu-monorepo",
+  "name": "kisansetu-prototype",
+  "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
   "scripts": {
-    "build": "turbo run build",
-    "dev": "turbo run dev",
-    "lint": "turbo run lint",
-    "test": "turbo run test"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "seed": "tsx lib/seed.ts"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.439.0",
+    "next": "^14.2.5",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "recharts": "^2.12.7",
+    "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
-    "turbo": "^2.0.0"
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/node": "^20.14.15",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.41",
+    "tailwindcss": "^3.4.9",
+    "tsx": "^4.16.5",
+    "typescript": "^5.5.4"
   }
 }
