@@ -10,17 +10,28 @@ import {
   ArrowUpRight,
   ShieldCheck,
   Calendar,
-  Box,
+  CloudRain,
+  Thermometer,
+  Droplets,
+  AlertTriangle,
+  Sun,
 } from 'lucide-react';
 import { AdvisoryResponse } from '@/lib/advisory-engine';
+import { MandiWeather } from '@/lib/weather';
 
 interface AdvisoryCardProps {
   advisory: AdvisoryResponse;
   cropName: string;
   mandiName: string;
+  weather?: MandiWeather;
 }
 
-export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({ advisory, cropName, mandiName }) => {
+export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
+  advisory,
+  cropName,
+  mandiName,
+  weather,
+}) => {
   const isSellNow = advisory.decision === 'SELL_NOW';
   const isWait = advisory.decision === 'WAIT';
   const isStore = advisory.decision === 'STORE';
@@ -57,7 +68,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({ advisory, cropName, 
 
   return (
     <div
-      className={`relative overflow-hidden rounded-3xl bg-card border-2 ${config.borderColor} p-6 sm:p-8 shadow-card transition-all`}
+      className={`relative overflow-hidden rounded-3xl bg-card border-2 ${config.borderColor} p-6 sm:p-8 shadow-card transition-all space-y-6`}
     >
       {/* Subtle Background Glow */}
       <div className={`absolute inset-0 bg-gradient-to-br ${config.gradient} pointer-events-none`} />
@@ -100,6 +111,50 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({ advisory, cropName, 
             💡 {advisory.reasonHi}
           </p>
         </div>
+
+        {/* Weather Intelligence Strip */}
+        {weather && (
+          <div className="p-4 rounded-2xl bg-amber-50/50 border border-amber-200/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center font-bold text-lg">
+                {weather.conditionIcon.startsWith('http') ? (
+                  <img src={weather.conditionIcon} alt="" className="w-7 h-7 object-contain" />
+                ) : (
+                  <span>{weather.conditionIcon}</span>
+                )}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-foreground">
+                    {weather.mandiName} Weather: {weather.temp}°C • {weather.condition}
+                  </span>
+                  <span
+                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                      weather.spoilageRisk === 'High'
+                        ? 'bg-rose-100 text-rose-800'
+                        : weather.spoilageRisk === 'Moderate'
+                        ? 'bg-amber-100 text-amber-800'
+                        : 'bg-emerald-100 text-emerald-800'
+                    }`}
+                  >
+                    {weather.spoilageRisk} Spoilage Risk
+                  </span>
+                </div>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Humidity: {weather.humidity}% • 48h Rain Probability: {weather.rainProbabilityNext48h}%
+                  {weather.isLive ? ' (OpenWeatherMap Live API)' : ' (Telemetry Active)'}
+                </p>
+              </div>
+            </div>
+
+            {weather.weatherAlert && (
+              <span className="text-[11px] font-semibold text-amber-900 bg-amber-100/80 px-3 py-1 rounded-lg border border-amber-300 flex items-center gap-1.5 self-stretch sm:self-auto">
+                <AlertTriangle className="w-3.5 h-3.5 text-amber-700 flex-shrink-0" />
+                <span>{weather.weatherAlert}</span>
+              </span>
+            )}
+          </div>
+        )}
 
         {/* 4 Clean Metric Cards (Uncrowded, High Readability) */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5 pt-2">

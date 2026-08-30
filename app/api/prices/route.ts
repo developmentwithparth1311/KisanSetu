@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { computeAdvisory } from '@/lib/advisory-engine';
+import { fetchMandiWeather } from '@/lib/weather';
+import { fetchLiveAgmarknetPrices } from '@/lib/market-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +57,10 @@ export async function GET(request: Request) {
     // Compute Advisory
     const advisory = computeAdvisory(allPricePoints, selectedCrop, selectedMandi.name);
 
+    // Fetch Live Weather & Market data asynchronously
+    const weather = await fetchMandiWeather(mandiId);
+    const liveGovRecords = await fetchLiveAgmarknetPrices(selectedCrop.name, selectedMandi.name);
+
     return NextResponse.json({
       crops,
       mandis,
@@ -68,6 +74,8 @@ export async function GET(request: Request) {
       latestPricePoint: requestedPricePoints[requestedPricePoints.length - 1],
       mandiComparisons,
       advisory,
+      weather,
+      isLiveAgmarknet: !!liveGovRecords && liveGovRecords.length > 0,
     });
   } catch (error: any) {
     console.error('Error fetching price data:', error);

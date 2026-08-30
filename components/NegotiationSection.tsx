@@ -17,6 +17,7 @@ import {
   DollarSign,
   TrendingUp,
   RefreshCw,
+  Cpu,
 } from 'lucide-react';
 
 interface NegotiationSectionProps {
@@ -32,6 +33,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
   const [buyers, setBuyers] = useState<any[]>([]);
   const [selectedLotId, setSelectedLotId] = useState<string | null>(initialLotId || null);
   const [loading, setLoading] = useState<boolean>(true);
+  const [isGeminiActive, setIsGeminiActive] = useState<boolean>(true);
 
   // Buyer Simulation State
   const [selectedBuyerId, setSelectedBuyerId] = useState<string>('b1');
@@ -92,6 +94,9 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
 
       const json = await res.json();
       if (json.success) {
+        if (json.isGeminiPowered !== undefined) {
+          setIsGeminiActive(json.isGeminiPowered);
+        }
         await fetchLots();
         setBuyerMessage('');
       }
@@ -140,18 +145,19 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-3xl bg-card border border-border shadow-card">
         <div>
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              Autonomous Bargaining
+            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
+              <Cpu className="w-3.5 h-3.5 text-emerald-600" />
+              Autonomous Bounded Bargaining
             </span>
             <span className="text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              Floor Protected
+              Floor Guaranteed
             </span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
             AI Negotiation & Smart Escrow Settlement
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            The KisanSetu agent auto-bargains with verified buyers to protect your target margin.
+            The KisanSetu AI agent auto-bargains with verified buyers to protect your target margin using certified quality grades.
           </p>
         </div>
 
@@ -228,9 +234,12 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           <div className="lg:col-span-7 rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <span className="text-xs uppercase font-bold text-emerald-800">Audit Ledger</span>
+                <span className="text-xs uppercase font-bold text-emerald-800 flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                  Live Bargaining Ledger
+                </span>
                 <h3 className="text-xl font-bold tracking-tight text-foreground">
-                  {activeLot.id} — Bargaining Timeline
+                  {activeLot.id} — Audit Log
                 </h3>
               </div>
 
@@ -322,7 +331,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                   Escrow Payment Locked (₹{activeLot.escrow_amount?.toLocaleString('en-IN')})
                 </h4>
                 <p className="text-xs text-emerald-800 max-w-sm mx-auto">
-                  Buyer payment is held in KisanSetu Escrow. Funds are released instantly upon dispatch verification.
+                  Buyer payment is held in KisanSetu Escrow Vault. Funds are released instantly upon dispatch verification.
                 </p>
               </div>
             )}
@@ -422,7 +431,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                 className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-card transition-all active:scale-95 disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
-                <span>{isBargaining ? 'AI Agent Analyzing...' : 'Submit Offer & Trigger AI Bargain'}</span>
+                <span>{isBargaining ? 'AI Agent Analyzing Offer...' : 'Submit Offer & Trigger AI Bargain'}</span>
               </button>
             </form>
           </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { evaluateBuyerOffer } from '@/lib/negotiation-agent';
+import { generateGeminiNegotiationCounter } from '@/lib/gemini';
 
 export const dynamic = 'force-dynamic';
 
@@ -59,8 +60,8 @@ export async function POST(request: Request) {
         now
       );
 
-      // 2. Run KisanSetu AI Negotiation Engine
-      const aiResult = evaluateBuyerOffer({
+      // 2. Run Baseline KisanSetu Negotiation Engine
+      const baselineInput = {
         lotId: lot.id,
         farmerName: lot.farmer_name,
         cropName: crop?.name || lot.crop_id,
@@ -75,9 +76,14 @@ export async function POST(request: Request) {
         offerAmount: Number(offerAmount),
         currentMandiModalPrice: currentMandiPrice,
         negotiationRound: numRounds,
-      });
+      };
 
-      // 3. Record AI Agent Action
+      const ruleResult = evaluateBuyerOffer(baselineInput);
+
+      // 3. Enhance with Gemini LLM Reasoning if API key is provided
+      const aiResult = await generateGeminiNegotiationCounter(baselineInput, ruleResult);
+
+      // 4. Record AI Agent Action
       const aiEventTime = new Date(Date.now() + 1000).toISOString();
       db.prepare(`
         INSERT INTO negotiation_events (lot_id, sender_type, sender_name, amount, message, action_type, created_at)
@@ -92,7 +98,7 @@ export async function POST(request: Request) {
         aiEventTime
       );
 
-      // 4. Update Lot Status in SQLite
+      // 5. Update Lot Status in SQLite
       let updatedStatus = aiResult.statusUpdate;
       let escrowAmount = null;
       let escrowStatus = null;
@@ -132,6 +138,7 @@ export async function POST(request: Request) {
         aiEvaluation: aiResult,
         events: updatedEvents,
         lotStatus: updatedStatus,
+        isGeminiPowered: !!process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY !== 'your_gemini_api_key',
       });
     }
 

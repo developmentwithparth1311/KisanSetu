@@ -1,9 +1,9 @@
 # 🌾 KisanSetu (किसान सेतु) — SIH Hackathon Prototype
 
 > **Smart India Hackathon (SIH26132)**  
-> *Agriculture, FoodTech & Rural Development — Strengthening market linkages and price discovery for farmers.*
+> *Agriculture, FoodTech & Rural Development — Strengthening market linkages and price discovery for smallholder farmers.*
 
-KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers smallholder farmers with real-time price intelligence, AI-driven sale-window advice, client-side photo quality grading, autonomous bounded price negotiation with verified buyers, and full voice accessibility in Indian languages.
+KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers farmers with real-time price intelligence, AI-driven sale-window advice with weather risk alerts, client-side photo quality grading, autonomous bounded price negotiation with verified buyers, and full voice accessibility in Indian languages.
 
 ---
 
@@ -13,6 +13,7 @@ KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers sm
 - **Live Mandi Intelligence**: Switch between crops (🍅 Tomato, 🧅 Onion, 🥔 Potato, 🌾 Wheat, 🌱 Soybean) and Mandis (Nashik APMC, Pune Gultekdi, Indore, Azadpur).
 - **Interactive Price Visualizer**: 7-day, 30-day, and 90-day historical trend graphs (Min/Max/Modal price and arrival volume) styled after official Agmarknet/e-NAM feeds.
 - **AI Recommendation Card**: Prominent **"Sell Now"**, **"Wait a Few Days"**, or **"Store in Warehouse"** recommendation with plain-language reasoning comparing current prices against 30-day moving averages and crop perishability.
+- **Weather & Spoilage Intelligence**: Live temperature, humidity, and 48h rainfall probability telemetry (via OpenWeatherMap API) to alert farmers before open-mandi rain ruins harvests.
 - **Nearby Mandi Arbitrage**: Compares prices across nearby centers to identify better regional price discovery.
 
 ### 2. 🌱 Digital Lot Creation + AI Quality Grading
@@ -23,7 +24,7 @@ KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers sm
 ### 3. 🤝 AI Negotiation Agent (*The Core Standout Feature*)
 - **Farmer-Set Parameters**: Farmer defines a **Floor Price** (hard minimum) and a **Target Price** (ideal goal).
 - **Buyer Bidding Simulator**: Select a verified buyer profile (e.g. *Shree Balaji Agro Traders* with Trust Score 94) and submit an offer.
-- **Autonomous Multi-Round Bargaining**:
+- **Autonomous Multi-Round Bargaining (Google Gemini + Rule Engine)**:
   - If offer < floor, AI firmly counters, defending produce quality using the verified AI Grade and local mandi price rallies.
   - If offer meets target or near-target from a high-trust buyer, AI accepts.
 - **Live Audit Trail / Negotiation Log**: Timestamped dialogue history showing the AI arguing for higher farmer realization in real time.
@@ -32,7 +33,7 @@ KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers sm
 ### 4. 🎙️ Multilingual Spoken Voice Agent
 - **Persistent Floating Mic**: Accessible across all pages.
 - **Spoken Price Queries**: Tap the mic and speak (e.g., *"Tomato price in Nashik"* or *"आज का प्याज का भाव"*).
-- **Audio Feedback**: Transcribes speech, extracts entities, and uses Text-to-Speech (`window.speechSynthesis` / Sarvam AI pipeline) to speak the price and advisory back aloud.
+- **Audio Feedback**: Transcribes speech, extracts entities (via Google Gemini NLP + Regex), and uses Text-to-Speech (`window.speechSynthesis` / Web Speech API) to speak the price and advisory back aloud.
 - **Demo Quick-Chips**: One-tap sample queries for quick demonstration during judging.
 
 ---
@@ -46,17 +47,30 @@ KisanSetu is an accessible, web-based Progressive Web App (PWA) that empowers sm
 
 ---
 
-## 💻 Tech Stack
+## 🔑 External API Integrations & `.env.local` Setup
 
-| Layer | Technology |
-|---|---|
-| **Framework** | Next.js 14 (App Router) |
-| **Language** | TypeScript |
-| **Styling** | Tailwind CSS + Lucide Icons |
-| **Charts** | Recharts |
-| **Database** | SQLite (`better-sqlite3`) + WAL mode |
-| **Voice / NLP** | Web Speech API (`SpeechRecognition` & `SpeechSynthesis`) + Entity Extractor |
-| **Data Feeds** | Seeded 90-day time-series modeled on Agmarknet & e-NAM |
+Create or update `.env.local` in your root folder:
+
+```env
+# 1. Google Gemini API (Vertex AI / Google AI Studio)
+# Powers LLM Multi-Turn Bargaining & Multilingual Voice Query Parser
+GEMINI_API_KEY=your_gemini_api_key_here
+
+# 2. OpenWeatherMap API
+# Powers Hyper-local Mandi Weather Telemetry & Spoilage Risk Forecasting
+OPENWEATHER_API_KEY=your_openweather_key_here
+
+# 3. Data.gov.in / Agmarknet Market Data API
+# Powers Live Government Mandi Daily Modal Rates and Arrivals Feed
+DATA_GOV_IN_API_KEY=your_data_gov_in_key_here
+```
+
+### Where to get these API keys (Free Tiers Available):
+1. **Google Gemini API**: Go to [Google AI Studio](https://aistudio.google.com/app/apikey) → Click **"Create API Key"**.
+2. **OpenWeatherMap API**: Go to [OpenWeatherMap API](https://openweathermap.org/api) → Sign up for the free **Current Weather Data & 5-Day Forecast** tier.
+3. **Data.gov.in API**: Go to [Data.gov.in](https://data.gov.in/) → Register → Request an API key under My Account → Search for the **"Current Daily Price of Various Commodities from Various Markets (Mandi)"** resource ID (`9ef84268-d588-465a-a308-a864a43d0070`).
+
+*(Note: If API keys are not provided, KisanSetu automatically falls back to deterministic rule engines and realistic seeded datasets, ensuring a 100% stable presentation.)*
 
 ---
 
@@ -79,9 +93,9 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ## 🧪 Step-by-Step Judge Walkthrough
 
-1. **Test Feature 1 (Price & Advisory)**:
+1. **Test Feature 1 (Price & Advisory with Weather)**:
    - Click on 🍅 Tomato in the crop selector.
-   - Note the **"Sell Now"** advisory card explaining that prices are +12% above the monthly average.
+   - Note the **"Sell Now"** advisory card explaining that prices are +12% above the monthly average, with weather telemetry for Nashik.
    - Click on 🧅 Onion to see how the advisory changes to **"Store in Warehouse"** due to lower prices and long storage longevity.
 2. **Test Feature 2 (Listing & AI Grading)**:
    - Click **"List Produce & AI Grade"** in the top navigation.
