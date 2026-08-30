@@ -362,11 +362,11 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
                 </div>
               )}
 
-              {/* Certified Quality Badge */}
+              {/* AI-assessed quality badge */}
               {!isScanning && aiGradeResult && (
                 <div className="absolute top-3 right-3 bg-emerald-700 text-white px-3 py-1.5 rounded-xl shadow-card flex items-center gap-1.5 text-xs font-bold">
                   <ShieldCheck className="w-4 h-4 text-emerald-200" />
-                  <span>{aiGradeResult.grade} Certified</span>
+                  <span>AI-Assessed {aiGradeResult.grade}</span>
                 </div>
               )}
             </div>

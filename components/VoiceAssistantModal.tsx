@@ -267,6 +267,8 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
               { query: 'आज का प्याज का भाव', label: '🧅 आज का प्याज का भाव' },
               { query: 'Wheat price in Indore', label: '🌾 Wheat in Indore' },
               { query: 'Potato rate in Pune', label: '🥔 Potato in Pune' },
+              { query: 'Show my pool', label: '🌐 Show my pool' },
+              { query: 'Who is my best buyer?', label: '🤝 Who is my best buyer?' },
             ].map((chip) => (
               <button
                 key={chip.query}

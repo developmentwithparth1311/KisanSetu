@@ -7,14 +7,15 @@ import {
   MessageSquareQuote,
   Mic,
   ArrowRightLeft,
+  UsersRound,
   Sparkles,
   Shield,
   Sprout,
 } from 'lucide-react';
 
 interface NavbarProps {
-  currentTab: 'price' | 'lots' | 'negotiation';
-  onSelectTab: (tab: 'price' | 'lots' | 'negotiation') => void;
+  currentTab: 'price' | 'lots' | 'pooling' | 'negotiation';
+  onSelectTab: (tab: 'price' | 'lots' | 'pooling' | 'negotiation') => void;
   onOpenVoice: () => void;
   activeRole: 'farmer' | 'buyer';
   onToggleRole: () => void;
@@ -57,6 +58,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Desktop Navigation Tabs (Modern ShadCN Segmented Control) */}
           <nav className="hidden md:flex items-center bg-secondary/80 p-1.5 rounded-2xl border border-border">
+            <button
+              onClick={() => onSelectTab('pooling')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
+                currentTab === 'pooling'
+                  ? 'bg-card text-foreground shadow-subtle'
+                  : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              <UsersRound className="w-4 h-4 text-emerald-600" />
+              <span>Pool & Buyers</span>
+            </button>
+
             <button
               onClick={() => onSelectTab('price')}
               className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-all duration-200 ${
@@ -121,6 +134,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Sticky Tab Navigation */}
       <div className="md:hidden flex items-center justify-around border-t border-border bg-card px-2 py-2">
+        <button
+          onClick={() => onSelectTab('pooling')}
+          className={`flex-1 py-2 text-center text-xs font-bold rounded-lg ${
+            currentTab === 'pooling'
+              ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+              : 'text-muted-foreground'
+          }`}
+        >
+          🌐 Pool
+        </button>
         <button
           onClick={() => onSelectTab('price')}
           className={`flex-1 py-2 text-center text-xs font-bold rounded-lg ${

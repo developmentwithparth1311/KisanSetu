@@ -16,8 +16,7 @@ import {
   AlertTriangle,
   Sun,
 } from 'lucide-react';
-import { AdvisoryResponse } from '@/lib/advisory-engine';
-import { MandiWeather } from '@/lib/weather';
+import type { AdvisoryResponse, MandiWeather } from '@/lib/client-types';
 
 interface AdvisoryCardProps {
   advisory: AdvisoryResponse;

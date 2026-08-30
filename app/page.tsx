@@ -7,6 +7,7 @@ import { LotCreationWizard } from '@/components/LotCreationWizard';
 import { NegotiationSection } from '@/components/NegotiationSection';
 import { VoiceAssistantModal } from '@/components/VoiceAssistantModal';
 import { FloatingVoiceButton } from '@/components/FloatingVoiceButton';
+import { GeoPoolingSection } from '@/components/GeoPoolingSection';
 import {
   TrendingUp,
   ShieldCheck,
@@ -20,12 +21,13 @@ import {
 } from 'lucide-react';
 
 export default function HomePage() {
-  const [currentTab, setCurrentTab] = useState<'price' | 'lots' | 'negotiation'>('price');
+  const [currentTab, setCurrentTab] = useState<'price' | 'lots' | 'pooling' | 'negotiation'>('price');
   const [activeRole, setActiveRole] = useState<'farmer' | 'buyer'>('farmer');
   const [isVoiceOpen, setIsVoiceOpen] = useState<boolean>(false);
   const [selectedCropIdForListing, setSelectedCropIdForListing] = useState<string>('tomato');
   const [selectedMandiIdForListing, setSelectedMandiIdForListing] = useState<string>('nashik');
   const [createdLotId, setCreatedLotId] = useState<string | null>(null);
+  const [negotiationContext, setNegotiationContext] = useState<{ buyerId: string; buyerName: string; poolId: string; requirementId: string; quantity: number } | null>(null);
 
   const handleNavigateToListProduce = (cropId: string, mandiId: string) => {
     setSelectedCropIdForListing(cropId);
@@ -35,6 +37,13 @@ export default function HomePage() {
 
   const handleLotCreated = (newLotId: string) => {
     setCreatedLotId(newLotId);
+    setNegotiationContext(null);
+    setCurrentTab('pooling');
+  };
+
+  const handlePoolNegotiation = (context: { lotId: string; buyerId: string; buyerName: string; poolId: string; requirementId: string; quantity: number }) => {
+    setCreatedLotId(context.lotId);
+    setNegotiationContext({ buyerId: context.buyerId, buyerName: context.buyerName, poolId: context.poolId, requirementId: context.requirementId, quantity: context.quantity });
     setCurrentTab('negotiation');
   };
 
@@ -71,7 +80,7 @@ export default function HomePage() {
           <div className="flex items-center gap-3 text-muted-foreground text-[11px]">
             <span className="flex items-center">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 mr-1" />
-              100% Escrow Protection
+              Demo Settlement Test Mode
             </span>
           </div>
         </div>
@@ -97,10 +106,17 @@ export default function HomePage() {
           </div>
         )}
 
-        {/* TAB 3: AI Negotiation & Escrow Deals */}
+        {/* TAB 3: Geo-Pooling and verified-buyer requirements */}
+        {currentTab === 'pooling' && (
+          <div className="animate-in fade-in duration-200">
+            <GeoPoolingSection initialLotId={createdLotId} onNegotiate={handlePoolNegotiation} />
+          </div>
+        )}
+
+        {/* TAB 4: AI Negotiation & simulated settlement */}
         {currentTab === 'negotiation' && (
           <div className="animate-in fade-in duration-200">
-            <NegotiationSection initialLotId={createdLotId} activeRole={activeRole} />
+            <NegotiationSection initialLotId={createdLotId} initialBuyerId={negotiationContext?.buyerId} poolContext={negotiationContext ? { poolId: negotiationContext.poolId, requirementId: negotiationContext.requirementId, quantity: negotiationContext.quantity } : undefined} activeRole={activeRole} />
           </div>
         )}
       </main>
