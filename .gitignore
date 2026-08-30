@@ -9,3 +9,7 @@ data/*.db-shm
 .env.local
 *.log
 .DS_Store
+__pycache__/
+.pytest_cache/
+*.py[cod]
+apps/api/.venv/

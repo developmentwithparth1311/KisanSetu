@@ -6,10 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "seed": "tsx lib/seed.ts"
+    "seed": "cd apps/api && python -m app.seed"
   },
   "dependencies": {
-    "better-sqlite3": "^11.3.0",
     "clsx": "^2.1.1",
     "lucide-react": "^0.439.0",
     "next": "^14.2.5",
@@ -19,7 +18,6 @@
     "tailwind-merge": "^2.5.2"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^7.6.11",
     "@types/node": "^20.14.15",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",

@@ -5,28 +5,25 @@ import {
   Sparkles,
   Bot,
   User,
-  ShieldCheck,
   CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
   Send,
   Building2,
-  Clock,
   Lock,
-  Layers,
-  DollarSign,
-  TrendingUp,
   RefreshCw,
   Cpu,
 } from 'lucide-react';
 
 interface NegotiationSectionProps {
   initialLotId?: string | null;
+  initialBuyerId?: string | null;
+  poolContext?: { poolId: string; requirementId: string; quantity: number };
   activeRole: 'farmer' | 'buyer';
 }
 
 export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
   initialLotId,
+  initialBuyerId,
+  poolContext,
   activeRole,
 }) => {
   const [lots, setLots] = useState<any[]>([]);
@@ -69,7 +66,13 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
     }
   }, [initialLotId]);
 
+  useEffect(() => {
+    if (initialBuyerId) setSelectedBuyerId(initialBuyerId);
+  }, [initialBuyerId]);
+
   const activeLot = lots.find((l) => l.id === selectedLotId) || lots[0];
+  const usesPoolContext = Boolean(poolContext && activeLot?.id === initialLotId);
+  const negotiationQuantity = usesPoolContext ? poolContext!.quantity : activeLot?.quantity;
 
   const handleBuyerSubmitOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -87,6 +90,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           action: 'buyer_bid',
           buyerId: selectedBuyer.id,
           buyerName: selectedBuyer.name,
+          poolId: usesPoolContext ? poolContext!.poolId : undefined,
           offerAmount: Number(buyerBidAmount),
           customMessage: buyerMessage,
         }),
@@ -117,6 +121,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
         body: JSON.stringify({
           lotId: activeLot.id,
           action: 'farmer_accept',
+          poolId: usesPoolContext ? poolContext!.poolId : undefined,
         }),
       });
       const json = await res.json();
@@ -154,10 +159,10 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
             </span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
-            AI Negotiation & Smart Escrow Settlement
+            AI Negotiation & Demo Settlement
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            The KisanSetu AI agent auto-bargains with verified buyers to protect your target margin using certified quality grades.
+            The KisanSetu AI agent recommends bounded counter-offers using AI-assessed quality grades; the farmer confirms every final sale.
           </p>
         </div>
 
@@ -169,6 +174,13 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           <span>Refresh</span>
         </button>
       </div>
+
+      {poolContext && (
+        <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div><p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Geo-Pool negotiation context</p><p className="text-xs font-semibold text-emerald-950 mt-1">Buyer requirement selected for {poolContext.quantity} qtl pooled supply.</p></div>
+          <span className="text-[11px] font-bold text-emerald-800">{poolContext.poolId}</span>
+        </div>
+      )}
 
       {/* 2. Active Lots Carousel Bar */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3.5">
@@ -300,7 +312,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
             </div>
 
             {/* Farmer Action Footer */}
-            {activeLot.status !== 'Sold' && (
+            {activeLot.status === 'Recommended Accept' && (
               <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-muted-foreground block">Top Offer</span>
@@ -316,22 +328,22 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                   className="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-card transition-all active:scale-95 disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Accept Deal & Secure Escrow</span>
+                  <span>Confirm Deal & Record Demo Settlement</span>
                 </button>
               </div>
             )}
 
-            {/* Escrow Confirmation Banner */}
+            {/* Demo settlement confirmation banner */}
             {activeLot.status === 'Sold' && (
               <div className="p-5 rounded-2xl bg-emerald-50 border-2 border-emerald-300 text-center space-y-2">
                 <div className="w-10 h-10 rounded-xl bg-emerald-700 text-white flex items-center justify-center mx-auto shadow-subtle">
                   <Lock className="w-5 h-5" />
                 </div>
                 <h4 className="text-lg font-bold text-emerald-950">
-                  Escrow Payment Locked (₹{activeLot.escrow_amount?.toLocaleString('en-IN')})
+                  Simulated Settlement Recorded (₹{activeLot.escrow_amount?.toLocaleString('en-IN')})
                 </h4>
                 <p className="text-xs text-emerald-800 max-w-sm mx-auto">
-                  Buyer payment is held in KisanSetu Escrow Vault. Funds are released instantly upon dispatch verification.
+                  Prototype settlement only: no regulated escrow or payment transfer has occurred.
                 </p>
               </div>
             )}
@@ -349,6 +361,11 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
               <p className="text-xs text-muted-foreground mt-0.5">
                 Place an offer as a wholesale buyer to see the AI counter-bargaining in action.
               </p>
+              {usesPoolContext && (
+                <p className="text-[11px] font-bold text-emerald-800 mt-2">
+                  Negotiating {negotiationQuantity} qtl pooled supply.
+                </p>
+              )}
             </div>
 
             <form onSubmit={handleBuyerSubmitOffer} className="space-y-4">

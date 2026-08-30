@@ -1,0 +1,91 @@
+openapi: 3.1.0
+info:
+  title: KisanSetu FastAPI contract
+  version: 1.0.0
+  description: >-
+    Browser clients retain same-origin /api paths through the Next.js proxy.
+    Numeric decisions, feasibility, and rankings are deterministic Python rules.
+servers:
+  - url: http://127.0.0.1:8000
+paths:
+  /health:
+    get:
+      summary: Service health
+      responses:
+        '200': { description: Python API is available }
+  /api/prices:
+    get:
+      summary: Price history, advisory, weather, and comparisons
+      parameters:
+        - { name: crop, in: query, schema: { type: string } }
+        - { name: mandi, in: query, schema: { type: string } }
+        - { name: days, in: query, schema: { type: integer } }
+      responses:
+        '200': { description: Existing PriceDashboard response shape }
+  /api/weather:
+    get:
+      summary: Weather or deterministic fallback for a mandi
+      parameters:
+        - { name: mandi, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Weather contract }
+  /api/lots:
+    get:
+      summary: Enriched lots and buyer profiles
+      responses:
+        '200': { description: Lots and buyers }
+    post:
+      summary: Create a lot; legacy listing fields plus optional Geo-Pooling fields
+      responses:
+        '200': { description: '{ success, lotId }' }
+  /api/negotiate:
+    post:
+      summary: Record a bid, farmer counter, or explicit farmer acceptance
+      description: >-
+        poolId is optional and valid only for a persisted pool containing lotId.
+        farmer_accept rejects values below the farmer floor.
+      responses:
+        '200': { description: Negotiation events, state, and effective quantity }
+        '400': { description: Invalid offer, floor, or pool context }
+  /api/voice-query:
+    post:
+      summary: Parse a spoken/typed market query
+      responses:
+        '200': { description: Spoken response plus crop, mandi, price, and advisory fields }
+  /api/pools/suggestions:
+    get:
+      summary: Explain compatible and rejected nearby lots for an anchor lot
+      parameters:
+        - { name: lotId, in: query, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Deterministic Geo-Pool suggestions }
+  /api/pools:
+    get:
+      summary: List persisted pools
+      responses:
+        '200': { description: Pools }
+    post:
+      summary: Materialize a deterministic suggestion
+      responses:
+        '200': { description: Persisted pool }
+  /api/pools/{poolId}/join:
+    post:
+      summary: Revalidate and accept a lot into an existing pool
+      parameters:
+        - { name: poolId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Persisted pool membership }
+  /api/buyer-requirements:
+    get:
+      summary: List buyer RFQs
+      responses:
+        '200': { description: Active or all requirements }
+  /api/matches:
+    get:
+      summary: Return feasible ranked matches and infeasible explanations
+      parameters:
+        - { name: lotId, in: query, schema: { type: string } }
+        - { name: poolId, in: query, schema: { type: string } }
+      responses:
+        '200': { description: Exactly one source must be supplied }
+        '400': { description: Both or neither source was supplied }
