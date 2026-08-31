@@ -182,6 +182,57 @@ Phase 10 — complete (clean-seed judge validation and documentation).
 
 ## Operational notes
 
+## UI language and voice accessibility foundation completed
+
+- Kept the existing Next.js, TypeScript, Tailwind, and browser Web Speech stack; no dependency or backend architecture was added.
+- Added a persistent navbar language selector with English, Hindi, and Marathi choices. The selected language is stored in `localStorage`, applied to the document language, and is available to the active React UI through one shared provider.
+- Localized the persistent product chrome: desktop/mobile navigation, role label, live-status strip, voice entry point, and footer now change with the selected language.
+- Updated the voice assistant controls, status states, errors, and action labels for all three languages. Browser speech output now requests `en-IN`, `hi-IN`, or `mr-IN`, selects a matching installed system voice when present, and safely falls back when a device does not offer that voice.
+- Hindi uses the existing deterministic Hindi response where available. Marathi has a deterministic local market-rate spoken fallback so it can still announce a price without a third-party translation service.
+- Ran `npm run build` successfully after the frontend changes. The only output was the existing non-fatal Webpack cache snapshot warning.
+
+## Farmer-first landing and multilingual UI overhaul completed
+
+- Replaced the former crop-filter-first landing screen with a farmer-oriented home page that explains the complete journey: check price, create a lot, join a nearby pool/find buyers, then negotiate and explicitly approve the sale.
+- Added direct start actions, a four-step journey panel, expanded instructional cards, and plain-language safety assurances for the protected minimum price and farmer-only final approval.
+- Rebuilt the navbar as a wider, simpler single-row desktop header using the available screen width (`1440px` shell, `1280px` content), shorter destinations, a dedicated Home entry, compact language/voice controls, and an independently scrollable mobile navigation row.
+- Extended English/Hindi/Marathi UI switching across the landing page and the main static content in price/advisory, lot creation, Geo-Pooling, buyer matching, negotiation, and floating voice controls. Known demo crop, unit, grade, variety, status, match-reason, and negotiation-event labels are localized rather than leaking English into translated cards.
+- Preserved user/buyer names, mandi names, numeric values, API identifiers, and standard abbreviations where translation would alter data identity.
+- Visually verified the styled English and Marathi desktop landing pages, a 390×844 Marathi mobile layout, and Hindi/Marathi card content through the running app. Re-ran `npm run build`; compilation, static generation, and TypeScript validation pass with only the existing non-fatal Webpack cache warning.
+
+## Harvest visual and multilingual speech correction completed
+
+- Generated a project-owned transparent Indian harvest arrangement containing onions, tomatoes, chillies, okra, brinjal, cauliflower, coriander, and a woven basket. Added it as a low-opacity decorative layer behind the right-side journey cards with a green readability overlay; no new UI/runtime library was introduced.
+- Fixed the actual cause of English speech after switching languages: the Python Geo-Pool/best-buyer endpoint previously returned English content in `spokenResponseHi`. Voice responses now contain deterministic English, Hindi, and Marathi wording for price, pool, buyer-match, unavailable-pool, and missing-rate outcomes.
+- The voice request now includes the selected UI language, and browser speech explicitly requests an exact `en-IN`, `hi-IN`, or `mr-IN` system voice before using a same-language fallback voice.
+- Added API assertions for Hindi and Marathi crop speech plus localized best-buyer speech. Focused voice tests pass (`4 passed`), the production frontend build passes, and the updated harvest hero was visually verified in the running app.
+
+## Harvest layer readability adjustment completed
+
+- Reduced the hero’s green wash so the transparent vegetable arrangement remains clearly visible: the image is now shown at higher opacity with only a light green readability overlay behind the journey cards.
+- Confirmed the updated Marathi hero visually in the running app; cards remain readable while tomatoes, onions, chillies, okra, brinjal, cauliflower, coriander, and the harvest basket are visible.
+
+## Farm hero and optional Sarvam speech completed
+
+- Replaced the decorative harvest arrangement with a transparent, natural Indian farm landscape: vegetable rows, red-earth path, distant hills, farmhouse, water tank, and a small harvest basket. The farm scene remains readable behind the journey cards without the previous heavy green wash.
+- Added an optional Python `/api/speech` adapter for Sarvam Bulbul text-to-speech. It reads `SARVAM_API_KEY` only from the backend environment, requests Hindi/Marathi (or English) WAV audio, and falls back to browser Web Speech when the key is absent or the provider is unavailable.
+- The key supplied during development was not written to the repository, logs, or client bundle. Rotate it before enabling live requests because it was exposed in chat.
+- Added mocked no-key coverage for the speech endpoint. Full Python tests and the Next production build pass after the integration.
+
+## Voice Help Hindi/Marathi Sarvam activation completed
+
+- Added automatic loading of the git-ignored `apps/api/.env` file at Python API startup while preserving real process environment variables as the higher-priority configuration source.
+- Activated Sarvam only for the Voice Help spoken-response path; the secret remains backend-only and never enters the Next.js client bundle or API response.
+- Localized all six Voice Help quick-query labels and transcripts for English, Hindi, and Marathi, and extended deterministic Marathi intent parsing for Geo-Pool and best-buyer questions.
+- Verified live Sarvam synthesis through the Python adapter for both `hi-IN` and `mr-IN`. Browser Web Speech remains the bounded fallback when Sarvam is unavailable.
+- Added local-env precedence and successful localized-audio endpoint tests. Full backend tests and the Next production build pass.
+
+## Fresh blue-sky farm hero completed
+
+- Edited the existing Indian farm hero in place to replace the dark/green-looking upper area with a natural blue morning sky and soft white clouds while preserving the vegetable rows, path, hills, farmhouse, water tank, and harvest basket.
+- Increased the farm artwork opacity and reduced the green readability wash so the sky stays visibly blue behind the journey panel while the dark translucent cards remain legible.
+- Corrected the journey-panel image fit from bottom-anchored `object-contain` to full-panel `object-cover`, removing the horizontal green seam and extending the blue sky cleanly to the rounded top edge.
+
 - The Next frontend requires FastAPI to be running at `PYTHON_API_URL` (default `http://127.0.0.1:8000`) for `/api/*` calls.
 - The checkout does not retain a checked-in `data/kisansetu.db` file; run `python -m app.seed` from `apps/api` to create/populate the local demo database.
 

@@ -13,6 +13,7 @@ from .routers.negotiation import router as negotiation_router
 from .routers.voice import router as voice_router
 from .routers.pools import router as pools_router
 from .routers.matches import router as matches_router
+from .routers.speech import router as speech_router
 from .schemas import HealthResponse
 
 
@@ -36,6 +37,7 @@ app.include_router(negotiation_router)
 app.include_router(voice_router)
 app.include_router(pools_router)
 app.include_router(matches_router)
+app.include_router(speech_router)
 
 
 @app.get("/health", response_model=HealthResponse)

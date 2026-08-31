@@ -50,8 +50,21 @@ paths:
   /api/voice-query:
     post:
       summary: Parse a spoken/typed market query
+      description: >-
+        Accepts transcript and optional UI language (en, hi, or mr). Responses
+        retain spokenResponse and spokenResponseHi and also provide
+        spokenResponseMr for deterministic Marathi browser speech.
       responses:
-        '200': { description: Spoken response plus crop, mandi, price, and advisory fields }
+        '200': { description: Multilingual spoken responses plus crop, mandi, price, and advisory fields }
+  /api/speech:
+    post:
+      summary: Optional Sarvam speech synthesis with browser fallback
+      description: >-
+        Accepts localized text and returns a base64 WAV only when
+        SARVAM_API_KEY is configured and the bounded external call succeeds.
+        Otherwise returns available=false so the browser can use Web Speech.
+      responses:
+        '200': { description: Speech audio payload or available=false }
   /api/pools/suggestions:
     get:
       summary: Explain compatible and rejected nearby lots for an anchor lot

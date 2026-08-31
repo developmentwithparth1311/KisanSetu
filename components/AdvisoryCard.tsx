@@ -17,6 +17,7 @@ import {
   Sun,
 } from 'lucide-react';
 import type { AdvisoryResponse, MandiWeather } from '@/lib/client-types';
+import { useLanguage } from './LanguageProvider';
 
 interface AdvisoryCardProps {
   advisory: AdvisoryResponse;
@@ -31,6 +32,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
   mandiName,
   weather,
 }) => {
+  const { language, l } = useLanguage();
   const isSellNow = advisory.decision === 'SELL_NOW';
   const isWait = advisory.decision === 'WAIT';
   const isStore = advisory.decision === 'STORE';
@@ -42,7 +44,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       badgeBg: 'bg-emerald-600 text-white',
       pillBg: 'bg-emerald-50 text-emerald-800 border-emerald-200',
       icon: <TrendingUp className="w-5 h-5 text-white" />,
-      actionTitle: 'Sell Now (तुरंत बेचें)',
+      actionTitle: l('Sell now', 'अभी बेचें', 'आता विक्री करा'),
       statusDot: 'bg-emerald-500',
     },
     WAIT: {
@@ -51,7 +53,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       badgeBg: 'bg-amber-500 text-white',
       pillBg: 'bg-amber-50 text-amber-900 border-amber-200',
       icon: <Clock className="w-5 h-5 text-white" />,
-      actionTitle: 'Wait a Few Days (कुछ दिन रुकें)',
+      actionTitle: l('Wait a few days', 'कुछ दिन रुकें', 'काही दिवस थांबा'),
       statusDot: 'bg-amber-500',
     },
     STORE: {
@@ -60,7 +62,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
       badgeBg: 'bg-blue-600 text-white',
       pillBg: 'bg-blue-50 text-blue-900 border-blue-200',
       icon: <Warehouse className="w-5 h-5 text-white" />,
-      actionTitle: 'Store in Warehouse (भंडारण करें)',
+      actionTitle: l('Store the produce', 'उपज का भंडारण करें', 'शेतमाल साठवा'),
       statusDot: 'bg-blue-500',
     },
   }[advisory.decision];
@@ -81,7 +83,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
             </div>
             <div>
               <span className="text-xs uppercase font-bold tracking-wider text-muted-foreground">
-                AI Sale-Window Engine
+                {l('Selling recommendation', 'बेचने की सलाह', 'विक्रीचा सल्ला')}
               </span>
               <h3 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
                 <span>{config.actionTitle}</span>
@@ -92,11 +94,15 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           <div className="flex items-center gap-2">
             <span className="inline-flex items-center text-xs font-semibold px-3 py-1.5 rounded-full bg-card border border-border shadow-subtle text-foreground">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600 mr-1.5" />
-              {advisory.confidenceScore}% Model Confidence
+              {advisory.confidenceScore}% {l('confidence', 'विश्वास', 'विश्वास')}
             </span>
             <span className={`inline-flex items-center text-xs font-bold px-3 py-1.5 rounded-full border ${config.pillBg}`}>
               <Calendar className="w-3.5 h-3.5 mr-1.5" />
-              {advisory.suggestedActionTimeline}
+              {isSellNow
+                ? l('Sell soon', 'जल्द बेचें', 'लवकर विक्री करा')
+                : isWait
+                ? l('Review in a few days', 'कुछ दिनों बाद देखें', 'काही दिवसांनी पुन्हा पहा')
+                : l('Store safely', 'सुरक्षित भंडारण करें', 'सुरक्षित साठवण करा')}
             </span>
           </div>
         </div>
@@ -104,11 +110,13 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
         {/* Big Plain-Language Highlight */}
         <div className="p-5 rounded-2xl bg-secondary/60 border border-border/80 space-y-1.5">
           <p className="text-lg sm:text-xl font-bold text-foreground leading-snug">
-            {advisory.reason}
+            {language === 'hi'
+              ? advisory.reasonHi
+              : language === 'mr'
+              ? l('', '', `${mandiName} येथील सध्याचा भाव आणि बाजारस्थिती पाहून हा सल्ला दिला आहे.`)
+              : advisory.reason}
           </p>
-          <p className="text-sm font-medium text-muted-foreground">
-            💡 {advisory.reasonHi}
-          </p>
+          {language === 'en' && <p className="text-sm font-medium text-muted-foreground">💡 {advisory.reasonHi}</p>}
         </div>
 
         {/* Weather Intelligence Strip */}
@@ -125,7 +133,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-foreground">
-                    {weather.mandiName} Weather: {weather.temp}°C • {weather.condition}
+                    {weather.mandiName} {l('weather', 'मौसम', 'हवामान')}: {weather.temp}°C
                   </span>
                   <span
                     className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
@@ -136,12 +144,11 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
                         : 'bg-emerald-100 text-emerald-800'
                     }`}
                   >
-                    {weather.spoilageRisk} Spoilage Risk
+                    {l('Spoilage risk', 'खराब होने का जोखिम', 'खराब होण्याचा धोका')}: {weather.spoilageRisk === 'High' ? l('High', 'अधिक', 'जास्त') : weather.spoilageRisk === 'Moderate' ? l('Moderate', 'मध्यम', 'मध्यम') : l('Low', 'कम', 'कमी')}
                   </span>
                 </div>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
-                  Humidity: {weather.humidity}% • 48h Rain Probability: {weather.rainProbabilityNext48h}%
-                  {weather.isLive ? ' (OpenWeatherMap Live API)' : ' (Telemetry Active)'}
+                  {l('Humidity', 'नमी', 'आर्द्रता')}: {weather.humidity}% • {l('Rain chance in 48 hours', '48 घंटे में बारिश की संभावना', '48 तासांत पावसाची शक्यता')}: {weather.rainProbabilityNext48h}%
                 </p>
               </div>
             </div>
@@ -160,7 +167,7 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
           {/* Stat 1: Current Rate */}
           <div className="p-4 rounded-2xl bg-card border border-border shadow-subtle space-y-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Current Modal Rate
+              {l('Current mandi rate', 'आज का मंडी भाव', 'आजचा बाजारभाव')}
             </span>
             <p className="text-2xl font-bold text-foreground tracking-tight">
               ₹{advisory.currentPrice.toLocaleString('en-IN')}
@@ -172,14 +179,14 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
               }`}
             >
               <ArrowUpRight className="w-3 h-3 mr-0.5" />
-              {advisory.pctTrend7Day >= 0 ? `+${advisory.pctTrend7Day}%` : `${advisory.pctTrend7Day}%`} in 7 days
+              {advisory.pctTrend7Day >= 0 ? `+${advisory.pctTrend7Day}%` : `${advisory.pctTrend7Day}%`} {l('in 7 days', '7 दिनों में', '7 दिवसांत')}
             </p>
           </div>
 
           {/* Stat 2: 30-Day Average */}
           <div className="p-4 rounded-2xl bg-card border border-border shadow-subtle space-y-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              30-Day Mandi Avg
+              {l('30-day average', '30 दिन का औसत', '30 दिवसांची सरासरी')}
             </span>
             <p className="text-2xl font-bold text-foreground tracking-tight">
               ₹{advisory.avg30Day.toLocaleString('en-IN')}
@@ -190,33 +197,37 @@ export const AdvisoryCard: React.FC<AdvisoryCardProps> = ({
                 advisory.pctVs30Day >= 0 ? 'text-emerald-700' : 'text-amber-700'
               }`}
             >
-              {advisory.pctVs30Day >= 0 ? `+${advisory.pctVs30Day}% vs avg` : `${advisory.pctVs30Day}% vs avg`}
+              {advisory.pctVs30Day >= 0 ? `+${advisory.pctVs30Day}%` : `${advisory.pctVs30Day}%`} {l('vs average', 'औसत से', 'सरासरीपेक्षा')}
             </p>
           </div>
 
           {/* Stat 3: Shelf Life */}
           <div className="p-4 rounded-2xl bg-card border border-border shadow-subtle space-y-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Produce Shelf-Life
+              {l('Storage life', 'भंडारण अवधि', 'साठवण कालावधी')}
             </span>
             <p className="text-2xl font-bold text-foreground tracking-tight">
-              {advisory.perishabilityLabel.split(' ')[0]}
+              {advisory.perishabilityScore >= 4
+                ? l('Very short', 'बहुत कम', 'अतिशय कमी')
+                : l('Moderate', 'मध्यम', 'मध्यम')}
             </p>
             <p className="text-xs font-medium text-muted-foreground">
-              {advisory.perishabilityScore >= 4 ? '⚠️ Fast spoilage risk' : '📦 Storage suitable'}
+              {advisory.perishabilityScore >= 4
+                ? l('⚠️ Spoils quickly', '⚠️ जल्दी खराब हो सकता है', '⚠️ लवकर खराब होऊ शकते')
+                : l('📦 Suitable for storage', '📦 भंडारण के लिए उचित', '📦 साठवणुकीस योग्य')}
             </p>
           </div>
 
           {/* Stat 4: Market Supply */}
           <div className="p-4 rounded-2xl bg-card border border-border shadow-subtle space-y-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Mandi Supply Today
+              {l('Supply today', 'आज की आवक', 'आजची आवक')}
             </span>
             <p className="text-2xl font-bold text-foreground tracking-tight">
-              {advisory.arrivalVolumeToday} <span className="text-xs font-normal text-muted-foreground">Tonnes</span>
+              {advisory.arrivalVolumeToday} <span className="text-xs font-normal text-muted-foreground">{l('tonnes', 'टन', 'टन')}</span>
             </p>
             <p className="text-xs font-semibold text-muted-foreground truncate">
-              {advisory.arrivalImpact}
+              {l('Current mandi arrivals', 'आज की मंडी आवक', 'आजची बाजार आवक')}
             </p>
           </div>
         </div>

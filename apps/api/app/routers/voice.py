@@ -20,6 +20,7 @@ router = APIRouter(prefix="/api")
 
 class VoiceQueryRequest(BaseModel):
     transcript: str = ""
+    language: str = "en"
 
 
 def _feature_five_voice_response(connection: Any, transcript: str, intent: str) -> dict[str, Any]:
@@ -30,6 +31,7 @@ def _feature_five_voice_response(connection: Any, transcript: str, intent: str) 
             "intent": intent,
             "spokenResponse": "No active demo Geo-Pool is available yet.",
             "spokenResponseHi": "अभी कोई सक्रिय डेमो जियो-पूल उपलब्ध नहीं है।",
+            "spokenResponseMr": "सध्या कोणताही सक्रिय डेमो जिओ-पूल उपलब्ध नाही.",
         }
 
     pool = connection.execute(
@@ -72,6 +74,14 @@ def _feature_five_voice_response(connection: Any, transcript: str, intent: str) 
             f"Your best verified demo buyer is {best_match['buyerName']}. The buyer needs "
             f"{best_match['requirementQuantity']:g} quintals and your pool has {supply['quantity']:g} quintals."
         )
+        spoken_hi = (
+            f"आपका सबसे अच्छा सत्यापित डेमो खरीदार {best_match['buyerName']} है। खरीदार को "
+            f"{best_match['requirementQuantity']:g} क्विंटल चाहिए और आपके पूल में {supply['quantity']:g} क्विंटल है।"
+        )
+        spoken_mr = (
+            f"तुमचा सर्वोत्तम पडताळलेला डेमो खरेदीदार {best_match['buyerName']} आहे. खरेदीदाराला "
+            f"{best_match['requirementQuantity']:g} क्विंटल हवे आहेत आणि तुमच्या पूलमध्ये {supply['quantity']:g} क्विंटल आहे."
+        )
     else:
         label = "Geo-Pool Ready"
         reason = (
@@ -82,6 +92,14 @@ def _feature_five_voice_response(connection: Any, transcript: str, intent: str) 
             f"Your Nashik Red Onion Geo-Pool has {supply['quantity']:g} quintals "
             f"from {member_count} demo farmers."
         )
+        spoken_hi = (
+            f"आपके नाशिक लाल प्याज़ जियो-पूल में {member_count} डेमो किसानों से "
+            f"{supply['quantity']:g} क्विंटल उपज है।"
+        )
+        spoken_mr = (
+            f"तुमच्या नाशिक लाल कांदा जिओ-पूलमध्ये {member_count} डेमो शेतकऱ्यांकडून "
+            f"{supply['quantity']:g} क्विंटल शेतमाल आहे."
+        )
 
     offer_price = float(best_match["offerPrice"]) if best_match else 0.0
     return {
@@ -90,7 +108,8 @@ def _feature_five_voice_response(connection: Any, transcript: str, intent: str) 
         "mandiId": "nashik", "mandiName": "Nashik APMC", "modalPrice": offer_price,
         "minPrice": offer_price, "maxPrice": offer_price, "trendPct": 0,
         "advisoryDecision": intent, "advisoryLabel": label,
-        "spokenResponse": spoken, "spokenResponseHi": spoken,
+        "spokenResponse": spoken, "spokenResponseHi": spoken_hi,
+        "spokenResponseMr": spoken_mr,
         "reason": reason, "isGeminiParsed": False,
         "availableQuantity": supply["quantity"], "memberCount": member_count,
         "buyerId": best_match["buyerId"] if best_match else None,
@@ -126,7 +145,12 @@ async def voice_query(request: VoiceQueryRequest) -> Any:
             "SELECT * FROM price_points WHERE crop_id = ? AND mandi_id = ? ORDER BY date ASC", (crop_id, mandi_id)
         ).fetchall()
         if not crop_row or not mandi_row or not price_rows:
-            return {"spokenResponse": f"I could not find latest rates for {transcript}. Please try asking for Tomato or Onion in Nashik.", "transcript": transcript}
+            return {
+                "spokenResponse": f"I could not find latest rates for {transcript}. Please try asking for Tomato or Onion in Nashik.",
+                "spokenResponseHi": "मुझे यह मंडी भाव नहीं मिला। कृपया नाशिक में टमाटर या प्याज़ का भाव पूछें।",
+                "spokenResponseMr": "हा बाजारभाव सापडला नाही. कृपया नाशिकमधील टोमॅटो किंवा कांद्याचा भाव विचारा.",
+                "transcript": transcript,
+            }
         crop, mandi = dict(crop_row), dict(mandi_row)
         history = [dict(row) for row in price_rows]
         advisory = compute_advisory(history, crop, mandi["name"])
@@ -134,13 +158,21 @@ async def voice_query(request: VoiceQueryRequest) -> Any:
         trend = advisory["pctTrend7Day"]
         trend_text = f"up {trend}% this week" if trend >= 0 else f"down {abs(trend)}% this week"
         short_name = crop["name"].split(" ")[0]
+        crop_hi = {"tomato": "टमाटर", "onion": "प्याज़", "potato": "आलू", "wheat": "गेहूं", "soybean": "सोयाबीन"}.get(crop_id, short_name)
+        crop_mr = {"tomato": "टोमॅटो", "onion": "कांदा", "potato": "बटाटा", "wheat": "गहू", "soybean": "सोयाबीन"}.get(crop_id, short_name)
+        decision_mr = {
+            "SELL_NOW": "आता विक्री करा",
+            "WAIT": "काही दिवस थांबा",
+            "STORE": "शेतमाल सुरक्षित साठवा",
+        }.get(advisory["decision"], "बाजारभाव पुन्हा तपासा")
         return {
             "transcript": transcript, "intent": "GET_PRICE", "cropId": crop_id, "cropName": crop["name"], "cropIcon": crop["icon"],
             "mandiId": mandi_id, "mandiName": mandi["name"], "modalPrice": latest["modal_price"],
             "minPrice": latest["min_price"], "maxPrice": latest["max_price"], "trendPct": trend,
             "advisoryDecision": advisory["decision"], "advisoryLabel": advisory["badgeTitle"],
             "spokenResponse": f"{short_name} price in {mandi['name']} is Rs {latest['modal_price']:,.0f} per quintal, {trend_text}. Our AI recommendation is to {advisory['badgeTitle']}.",
-            "spokenResponseHi": f"{mandi['name']} में {short_name} का भाव Rs {latest['modal_price']:,.0f} प्रति क्विंटल है। AI सलाह है: {advisory['badgeTitleHi']}।",
+            "spokenResponseHi": f"{mandi['name']} में {crop_hi} का भाव {latest['modal_price']:,.0f} रुपये प्रति क्विंटल है। सलाह है: {advisory['badgeTitleHi']}।",
+            "spokenResponseMr": f"{mandi['name']} येथे {crop_mr}चा भाव {latest['modal_price']:,.0f} रुपये प्रति क्विंटल आहे. सल्ला: {decision_mr}.",
             "reason": advisory["reason"], "isGeminiParsed": gemini_parsed is not None,
         }
     except Exception as exc:

@@ -2,17 +2,19 @@
 
 import React from 'react';
 import { Mic } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface FloatingVoiceButtonProps {
   onClick: () => void;
 }
 
 export const FloatingVoiceButton: React.FC<FloatingVoiceButtonProps> = ({ onClick }) => {
+  const { t } = useLanguage();
   return (
     <div className="fixed bottom-6 right-6 z-40">
       <button
         onClick={onClick}
-        aria-label="Open Voice Assistant"
+        aria-label={t('voiceHelp')}
         className="group relative flex items-center justify-center p-3.5 sm:px-5 sm:py-3.5 rounded-full bg-gradient-to-r from-emerald-600 to-green-700 hover:from-emerald-700 hover:to-green-800 text-white shadow-floating transition-all duration-300 hover:scale-105 active:scale-95 border-2 border-white ring-4 ring-emerald-500/20"
       >
         <div className="flex items-center gap-2">
@@ -24,7 +26,7 @@ export const FloatingVoiceButton: React.FC<FloatingVoiceButtonProps> = ({ onClic
             </span>
           </div>
           <span className="hidden sm:inline font-bold text-xs tracking-tight">
-            Voice Help (बोलें)
+            {t('voiceHelp')}
           </span>
         </div>
       </button>
