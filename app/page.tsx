@@ -8,6 +8,8 @@ import { NegotiationSection } from '@/components/NegotiationSection';
 import { VoiceAssistantModal } from '@/components/VoiceAssistantModal';
 import { FloatingVoiceButton } from '@/components/FloatingVoiceButton';
 import { GeoPoolingSection } from '@/components/GeoPoolingSection';
+import { FarmerJourney } from '@/components/FarmerJourney';
+import type { NavigationTab } from '@/components/Navbar';
 import {
   TrendingUp,
   ShieldCheck,
@@ -19,9 +21,11 @@ import {
   CheckCircle2,
   Sparkles,
 } from 'lucide-react';
+import { useLanguage } from '@/components/LanguageProvider';
 
 export default function HomePage() {
-  const [currentTab, setCurrentTab] = useState<'price' | 'lots' | 'pooling' | 'negotiation'>('price');
+  const { t } = useLanguage();
+  const [currentTab, setCurrentTab] = useState<NavigationTab>('home');
   const [activeRole, setActiveRole] = useState<'farmer' | 'buyer'>('farmer');
   const [isVoiceOpen, setIsVoiceOpen] = useState<boolean>(false);
   const [selectedCropIdForListing, setSelectedCropIdForListing] = useState<string>('tomato');
@@ -62,32 +66,13 @@ export default function HomePage() {
         onToggleRole={handleToggleRole}
       />
 
-      {/* 2. Top Metric & Live Status Strip */}
-      <div className="border-b border-border/70 bg-card/60 px-4 py-2">
-        <div className="max-w-6xl mx-auto flex flex-wrap items-center justify-between text-xs font-semibold gap-2">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center text-emerald-800 font-bold">
-              <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-ping" />
-              Live Mandi Feeds (Agmarknet & e-NAM)
-            </span>
-            <span className="hidden sm:inline text-muted-foreground">•</span>
-            <span className="hidden sm:flex items-center text-muted-foreground">
-              <Bot className="w-3.5 h-3.5 text-emerald-700 mr-1" />
-              Autonomous Bounded Bargaining Active
-            </span>
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-24 pt-6 sm:px-6 sm:pt-8 lg:px-8">
+        {currentTab === 'home' && (
+          <div className="animate-in fade-in duration-200">
+            <FarmerJourney onNavigate={setCurrentTab} />
           </div>
+        )}
 
-          <div className="flex items-center gap-3 text-muted-foreground text-[11px]">
-            <span className="flex items-center">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700 mr-1" />
-              Demo Settlement Test Mode
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Main Uncrowded Body Container */}
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 pt-8 pb-24">
         {/* TAB 1: Mandi Prices & AI Advisory */}
         {currentTab === 'price' && (
           <div className="animate-in fade-in duration-200">
@@ -139,10 +124,10 @@ export default function HomePage() {
       <footer className="border-t border-border bg-card py-6 text-center text-xs text-muted-foreground">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
           <p className="font-semibold text-foreground">
-            🌾 KisanSetu (किसान सेतु) — Smart India Hackathon Prototype (SIH26132)
+            {t('footerProduct')}
           </p>
           <p className="text-muted-foreground text-[11px]">
-            Designed for Smallholder Farmers • PWA Accessible • Sarvam AI & Web Speech
+            {t('footerDetail')}
           </p>
         </div>
       </footer>

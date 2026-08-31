@@ -19,9 +19,11 @@ _MANDIS = {
 
 _BEST_BUYER_PHRASES = (
     "best buyer", "buyer match", "buyer requirement", "सबसे अच्छा खरीदार", "सर्वोत्तम खरीदार",
+    "माझा सर्वोत्तम खरेदीदार",
 )
 _POOL_PHRASES = (
     "find pool", "show my pool", "read my pool", "geo pool", "geopool", "मेरा पूल", "पूल दिखाओ",
+    "माझा पूल", "पूल दाखवा",
 )
 
 

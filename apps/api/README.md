@@ -44,6 +44,14 @@ without a valid key or usable response, both endpoints use deterministic
 fallbacks. Gemini can improve negotiation wording but cannot change a numeric
 result, decision, or state.
 
+`POST /api/speech` optionally synthesizes the already-localized response with
+Sarvam `bulbul:v3`. Set `SARVAM_API_KEY` in the Python process environment or
+in the git-ignored `apps/api/.env` file. Process environment values take
+priority; never commit the local file. The route returns `available: false`
+when the key is missing or the bounded external call fails, allowing the
+frontend to use the browser's `speechSynthesis` fallback without blocking the
+demo.
+
 The deterministic parser also supports the required Feature 5 intents **Show
 my pool** and **Who is my best buyer?**. Their results reuse the persisted pool
 and the same hard-feasibility/match-scoring rules as `/api/matches`.

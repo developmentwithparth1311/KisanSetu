@@ -22,6 +22,8 @@ def test_rule_parser_handles_hindi_hinglish_and_marathi() -> None:
     assert parse_voice_query_rules("आज का प्याज का भाव") ["detectedCropId"] == "onion"
     assert parse_voice_query_rules("बटाटा भाव पुणे") ["detectedCropId"] == "potato"
     assert parse_voice_query_rules("wheat price in indore") ["detectedMandiId"] == "indore"
+    assert parse_voice_query_rules("माझा पूल दाखवा")["intent"] == "FIND_POOL"
+    assert parse_voice_query_rules("माझा सर्वोत्तम खरेदीदार कोण आहे?")["intent"] == "BEST_BUYER"
 
 
 def test_voice_query_preserves_frontend_response_fields(tmp_path: Path, monkeypatch) -> None:
@@ -30,10 +32,12 @@ def test_voice_query_preserves_frontend_response_fields(tmp_path: Path, monkeypa
 
     assert response.status_code == 200
     payload = response.json()
-    assert {"transcript", "cropId", "cropName", "cropIcon", "mandiId", "mandiName", "modalPrice", "minPrice", "maxPrice", "trendPct", "advisoryDecision", "advisoryLabel", "spokenResponse", "spokenResponseHi", "reason", "isGeminiParsed"}.issubset(payload)
+    assert {"transcript", "cropId", "cropName", "cropIcon", "mandiId", "mandiName", "modalPrice", "minPrice", "maxPrice", "trendPct", "advisoryDecision", "advisoryLabel", "spokenResponse", "spokenResponseHi", "spokenResponseMr", "reason", "isGeminiParsed"}.issubset(payload)
     assert payload["cropId"] == "onion"
     assert payload["mandiId"] == "nashik"
     assert payload["isGeminiParsed"] is False
+    assert "प्याज़" in payload["spokenResponseHi"]
+    assert "कांदा" in payload["spokenResponseMr"]
 
 
 def test_feature_five_voice_intents_read_seeded_pool_and_best_buyer(tmp_path: Path, monkeypatch) -> None:
@@ -52,6 +56,8 @@ def test_feature_five_voice_intents_read_seeded_pool_and_best_buyer(tmp_path: Pa
     assert buyer["requirementQuantity"] == 100
     assert buyer["availableQuantity"] == 106
     assert buyer["trustScore"] == 94
+    assert "सबसे अच्छा" in buyer["spokenResponseHi"]
+    assert "सर्वोत्तम" in buyer["spokenResponseMr"]
 
 
 def test_voice_query_rejects_empty_transcript(tmp_path: Path, monkeypatch) -> None:

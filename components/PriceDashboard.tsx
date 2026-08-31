@@ -23,12 +23,14 @@ import {
   Database,
 } from 'lucide-react';
 import { AdvisoryCard } from './AdvisoryCard';
+import { useLanguage } from './LanguageProvider';
 
 interface PriceDashboardProps {
   onNavigateToListProduce: (cropId: string, mandiId: string) => void;
 }
 
 export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToListProduce }) => {
+  const { l } = useLanguage();
   const [selectedCropId, setSelectedCropId] = useState<string>('tomato');
   const [selectedMandiId, setSelectedMandiId] = useState<string>('nashik');
   const [timeframe, setTimeframe] = useState<7 | 30 | 90>(30);
@@ -69,6 +71,18 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
     { id: 'azadpur', name: 'Azadpur Mandi', state: 'Delhi' },
   ];
 
+  const cropLabel = (crop: any) => {
+    const labels: Record<string, [string, string, string]> = {
+      tomato: ['Tomato', 'टमाटर', 'टोमॅटो'],
+      onion: ['Onion', 'प्याज़', 'कांदा'],
+      potato: ['Potato', 'आलू', 'बटाटा'],
+      wheat: ['Wheat', 'गेहूं', 'गहू'],
+      soybean: ['Soybean', 'सोयाबीन', 'सोयाबीन'],
+    };
+    const label = labels[crop.id];
+    return label ? l(...label) : crop.name;
+  };
+
   const formattedChartData =
     data?.priceHistory?.map((p: any) => ({
       date: p.date.substring(5), // 'MM-DD'
@@ -84,12 +98,14 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Select Crop (फसल चुनें)
+            {l('Select your crop', 'अपनी फसल चुनें', 'तुमचे पीक निवडा')}
           </label>
           <div className="flex items-center gap-2">
             <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              {data?.isLiveAgmarknet ? 'Agmarknet Live API' : 'Agmarknet & e-NAM Verified Feed'}
+              {data?.isLiveAgmarknet
+                ? l('Live Agmarknet prices', 'लाइव Agmarknet भाव', 'थेट Agmarknet भाव')
+                : l('Verified demo market feed', 'सत्यापित डेमो मंडी डेटा', 'पडताळलेला डेमो बाजार डेटा')}
             </span>
           </div>
         </div>
@@ -108,10 +124,7 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
                 }`}
               >
                 <span className="text-3xl mb-1.5">{c.icon}</span>
-                <span className="font-bold text-sm tracking-tight">{c.name.split(' ')[0]}</span>
-                <span className="text-xs text-muted-foreground font-medium">
-                  {c.name.split(' ')[1] || ''}
-                </span>
+                <span className="font-bold text-sm tracking-tight">{cropLabel(c)}</span>
 
                 {isSelected && (
                   <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-600" />
@@ -131,7 +144,7 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
           </div>
           <div>
             <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block">
-              Market / APMC Mandi
+              {l('Market / APMC mandi', 'बाज़ार / APMC मंडी', 'बाजार / APMC मंडी')}
             </span>
             <select
               value={selectedMandiId}
@@ -150,9 +163,9 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
         {/* Timeframe Segmented Control */}
         <div className="flex items-center bg-secondary/80 p-1 rounded-xl border border-border self-start sm:self-auto">
           {[
-            { label: '7 Days', val: 7 },
-            { label: '30 Days', val: 30 },
-            { label: '90 Days', val: 90 },
+            { label: l('7 days', '7 दिन', '7 दिवस'), val: 7 },
+            { label: l('30 days', '30 दिन', '30 दिवस'), val: 30 },
+            { label: l('90 days', '90 दिन', '90 दिवस'), val: 90 },
           ].map((tab) => (
             <button
               key={tab.val}
@@ -184,10 +197,14 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h3 className="text-xl font-bold tracking-tight text-foreground">
-              {data?.selectedCrop?.name || 'Crop'} Price Movement
+              {cropLabel(data?.selectedCrop || { id: selectedCropId, name: 'Crop' })} {l('price movement', 'भाव का बदलाव', 'भावातील बदल')}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Historical modal rates at {data?.selectedMandi?.name} over the last {timeframe} days.
+              {l(
+                `Modal rates at ${data?.selectedMandi?.name || l('your selected mandi', 'आपकी चुनी हुई मंडी', 'तुमच्या निवडलेल्या मंडीत')} over the last ${timeframe} days.`,
+                `${data?.selectedMandi?.name || 'चुनी हुई मंडी'} में पिछले ${timeframe} दिनों के मोडल भाव।`,
+                `${data?.selectedMandi?.name || 'निवडलेली मंडी'} येथील मागील ${timeframe} दिवसांचे मोडल भाव.`
+              )}
             </p>
           </div>
 
@@ -196,7 +213,7 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
             onClick={() => onNavigateToListProduce(selectedCropId, selectedMandiId)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-subtle transition-all active:scale-95 self-start sm:self-auto"
           >
-            <span>List at this rate</span>
+            <span>{l('Create lot at this price', 'इस भाव पर लॉट बनाएं', 'या भावावर लॉट तयार करा')}</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>
@@ -253,10 +270,10 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
         <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-4">
           <div>
             <h3 className="text-lg font-bold tracking-tight text-foreground">
-              Nearby Mandi Price Comparison (अन्य मंडियों के भाव)
+              {l('Compare nearby mandi prices', 'पास की मंडियों के भाव मिलाएं', 'जवळच्या बाजारभावांची तुलना करा')}
             </h3>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Click any market to switch your analysis and view rate differences.
+              {l('Choose a market to compare rates.', 'भावों की तुलना के लिए मंडी चुनें।', 'भावांची तुलना करण्यासाठी बाजार निवडा.')}
             </p>
           </div>
 
@@ -277,7 +294,7 @@ export const PriceDashboard: React.FC<PriceDashboardProps> = ({ onNavigateToList
                     <span className="font-bold text-sm text-foreground">{item.mandiName}</span>
                     {item.isCurrent && (
                       <span className="text-[10px] font-bold px-2 py-0.5 bg-emerald-700 text-white rounded-full">
-                        Active
+                        {l('Selected', 'चुनी हुई', 'निवडलेले')}
                       </span>
                     )}
                   </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Mic,
   Volume2,
@@ -10,6 +10,7 @@ import {
   ArrowRight,
   ShieldCheck,
 } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface VoiceAssistantModalProps {
   isOpen: boolean;
@@ -22,11 +23,13 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
   onClose,
   onSelectCropAndMandi,
 }) => {
+  const { language, locale, t, l } = useLanguage();
   const [isListening, setIsListening] = useState<boolean>(false);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [transcript, setTranscript] = useState<string>('');
   const [queryResult, setQueryResult] = useState<any>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (!isOpen) {
@@ -43,7 +46,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      setErrorMessage('Speech recognition is not supported in this browser. Please use the quick voice chips below!');
+      setErrorMessage(t('voiceUnsupported'));
       return;
     }
 
@@ -51,7 +54,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = 'en-IN';
+      recognition.lang = locale;
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -72,7 +75,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         console.error('Speech error:', event.error);
         setIsListening(false);
         if (event.error === 'not-allowed') {
-          setErrorMessage('Microphone access was denied. You can tap the sample question chips below to test!');
+          setErrorMessage(t('micDenied'));
         }
       };
 
@@ -84,12 +87,17 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
     } catch (e: any) {
       console.error(e);
       setIsListening(false);
-      setErrorMessage('Microphone failed to start. Please click one of the quick question chips below.');
+      setErrorMessage(t('micFailed'));
     }
   };
 
   const handleStopVoice = () => {
     setIsListening(false);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      audioRef.current = null;
+    }
     if ('speechSynthesis' in window) {
       window.speechSynthesis.cancel();
       setIsSpeaking(false);
@@ -102,23 +110,53 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
       const res = await fetch('/api/voice-query', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ transcript: spokenText }),
+        body: JSON.stringify({ transcript: spokenText, language }),
       });
 
       const data = await res.json();
       setQueryResult(data);
-      speakAudio(data.spokenResponse || data.spokenResponseHi);
+      speakAudio(getSpokenResponse(data));
     } catch (err) {
       console.error('Failed to process voice query', err);
-      setErrorMessage('Could not process voice query. Please try again.');
+      setErrorMessage(t('voiceFailed'));
     }
   };
 
-  const speakAudio = (textToSpeak: string) => {
+  const speakAudio = async (textToSpeak: string) => {
+    if (!textToSpeak) return;
+
+    // Prefer Sarvam when configured on the Python API. If unavailable, use the
+    // browser's built-in voice with the same language code.
+    try {
+      const response = await fetch('/api/speech', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: textToSpeak, language }),
+      });
+      const data = await response.json();
+      if (data.available && data.audioBase64) {
+        const audio = new Audio(`data:${data.mimeType || 'audio/wav'};base64,${data.audioBase64}`);
+        audioRef.current = audio;
+        audio.onplay = () => setIsSpeaking(true);
+        audio.onended = () => { setIsSpeaking(false); audioRef.current = null; };
+        audio.onerror = () => { setIsSpeaking(false); audioRef.current = null; };
+        await audio.play();
+        return;
+      }
+    } catch (err) {
+      console.warn('Sarvam speech unavailable; using browser speech.', err);
+    }
+
     if (!('speechSynthesis' in window)) return;
 
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(textToSpeak);
+    utterance.lang = locale;
+    const languagePrefix = locale.slice(0, 2).toLowerCase();
+    const availableVoices = window.speechSynthesis.getVoices();
+    const matchingVoice = availableVoices.find((voice) => voice.lang.toLowerCase() === locale.toLowerCase())
+      || availableVoices.find((voice) => voice.lang.toLowerCase().startsWith(languagePrefix));
+    if (matchingVoice) utterance.voice = matchingVoice;
     utterance.rate = 0.95;
     utterance.pitch = 1.0;
 
@@ -128,6 +166,44 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
 
     window.speechSynthesis.speak(utterance);
   };
+
+  const getSpokenResponse = (data: any): string => {
+    if (language === 'hi') return data.spokenResponseHi || data.spokenResponse || '';
+    if (language === 'mr') {
+      if (data.spokenResponseMr) return data.spokenResponseMr;
+      if (data.cropName && data.mandiName && data.modalPrice) {
+        return `${data.cropName}, ${data.mandiName} मंडीतील मोडल दर ₹${data.modalPrice} प्रति क्विंटल आहे.`;
+      }
+    }
+    return data.spokenResponse || data.spokenResponseHi || '';
+  };
+
+  const quickQueries = [
+    {
+      query: l('Tomato price in Nashik', 'नाशिक में टमाटर का भाव', 'नाशिकमध्ये टोमॅटोचा भाव'),
+      label: l('🍅 Tomato in Nashik', '🍅 नाशिक में टमाटर', '🍅 नाशिकमधील टोमॅटो'),
+    },
+    {
+      query: l('Onion price in Nashik', 'आज नाशिक में प्याज़ का भाव', 'आज नाशिकमध्ये कांद्याचा भाव'),
+      label: l('🧅 Onion in Nashik', '🧅 नाशिक में प्याज़', '🧅 नाशिकमधील कांदा'),
+    },
+    {
+      query: l('Wheat price in Indore', 'इंदौर में गेहूं का भाव', 'इंदूरमध्ये गव्हाचा भाव'),
+      label: l('🌾 Wheat in Indore', '🌾 इंदौर में गेहूं', '🌾 इंदूरमधील गहू'),
+    },
+    {
+      query: l('Potato rate in Pune', 'पुणे में आलू का भाव', 'पुण्यात बटाट्याचा भाव'),
+      label: l('🥔 Potato in Pune', '🥔 पुणे में आलू', '🥔 पुण्यातील बटाटा'),
+    },
+    {
+      query: l('Show my pool', 'मेरा पूल दिखाओ', 'माझा पूल दाखवा'),
+      label: l('🌐 Show my pool', '🌐 मेरा पूल दिखाओ', '🌐 माझा पूल दाखवा'),
+    },
+    {
+      query: l('Who is my best buyer?', 'मेरा सबसे अच्छा खरीदार कौन है?', 'माझा सर्वोत्तम खरेदीदार कोण आहे?'),
+      label: l('🤝 Who is my best buyer?', '🤝 सबसे अच्छा खरीदार कौन है?', '🤝 सर्वोत्तम खरेदीदार कोण?'),
+    },
+  ];
 
   if (!isOpen) return null;
 
@@ -146,13 +222,13 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         <div className="text-center space-y-1">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-50 text-emerald-800 rounded-full text-[11px] font-bold border border-emerald-200">
             <Sparkles className="w-3 h-3" />
-            <span>KisanSetu Voice Agent</span>
+            <span>{t('voiceAgent')}</span>
           </span>
           <h3 className="text-2xl font-bold tracking-tight text-foreground">
-            Spoken Price Assistant (आवाज सहायक)
+            {t('voiceTitle')}
           </h3>
           <p className="text-xs text-muted-foreground">
-            Ask in English or Hindi to get real-time mandi rates and advice.
+            {t('voiceDescription')}
           </p>
         </div>
 
@@ -179,10 +255,10 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
 
           <p className="mt-3 text-xs font-bold text-foreground">
             {isListening
-              ? '🎙️ Listening... (बोलिए, सुन रहे हैं)'
+              ? `🎙️ ${t('listening')}`
               : isSpeaking
-              ? '🔊 Speaking response...'
-              : 'Tap Microphone to Speak'}
+              ? `🔊 ${t('speaking')}`
+              : t('tapToSpeak')}
           </p>
         </div>
 
@@ -190,7 +266,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         {transcript && (
           <div className="p-3.5 rounded-xl bg-secondary/50 border border-border text-center">
             <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-0.5">
-              Transcribed Speech
+              {t('transcript')}
             </span>
             <p className="text-sm font-bold text-foreground">
               "{transcript}"
@@ -215,7 +291,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
 
             <div className="flex items-baseline justify-between border-t border-emerald-200/80 pt-2">
               <div>
-                <span className="text-[10px] text-muted-foreground font-bold uppercase block">Modal Rate</span>
+                <span className="text-[10px] text-muted-foreground font-bold uppercase block">{t('modalRate')}</span>
                 <span className="text-2xl font-black text-emerald-950">
                   ₹{queryResult.modalPrice?.toLocaleString('en-IN')}
                   <span className="text-xs font-normal text-muted-foreground"> / qtl</span>
@@ -243,7 +319,7 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
                 }}
                 className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all"
               >
-                <span>View Full Chart & Advisory</span>
+                <span>{t('fullChart')}</span>
                 <ArrowRight className="w-3.5 h-3.5" />
               </button>
             )}
@@ -259,17 +335,10 @@ export const VoiceAssistantModal: React.FC<VoiceAssistantModalProps> = ({
         {/* Quick Demo Question Chips */}
         <div className="space-y-1.5">
           <span className="text-[10px] font-bold uppercase text-muted-foreground block text-center">
-            Quick Voice Queries (नमूना प्रश्न)
+            {t('quickQueries')}
           </span>
           <div className="grid grid-cols-2 gap-2">
-            {[
-              { query: 'Tomato price in Nashik', label: '🍅 Tomato in Nashik' },
-              { query: 'आज का प्याज का भाव', label: '🧅 आज का प्याज का भाव' },
-              { query: 'Wheat price in Indore', label: '🌾 Wheat in Indore' },
-              { query: 'Potato rate in Pune', label: '🥔 Potato in Pune' },
-              { query: 'Show my pool', label: '🌐 Show my pool' },
-              { query: 'Who is my best buyer?', label: '🤝 Who is my best buyer?' },
-            ].map((chip) => (
+            {quickQueries.map((chip) => (
               <button
                 key={chip.query}
                 onClick={() => processVoiceQuery(chip.query)}

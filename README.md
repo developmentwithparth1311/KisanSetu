@@ -53,9 +53,10 @@ KisanSetu is an accessible, web-based Progressive Web App (PWA) for price intell
 
 ---
 
-## 🔑 External API Integrations & `.env.local` Setup
+## 🔑 External API Integrations & environment setup
 
-Create or update `.env.local` in your root folder:
+Set provider keys in the environment of the Python API. For local development,
+the backend also automatically loads a git-ignored `apps/api/.env` file:
 
 ```env
 # 1. Google Gemini API (optional)
@@ -69,6 +70,10 @@ OPENWEATHER_API_KEY=your_openweather_key_here
 # 3. Data.gov.in / Agmarknet Market Data API
 # Optional market-feed enrichment; deterministic seeded data is used without it.
 DATA_GOV_IN_API_KEY=your_data_gov_in_key_here
+
+# 4. Sarvam AI text-to-speech (optional; Python backend only)
+# Hindi/Marathi audio is generated when this is set; browser Web Speech is the fallback.
+SARVAM_API_KEY=your_sarvam_api_key_here
 ```
 
 ### Where to get these API keys (Free Tiers Available):
@@ -76,7 +81,7 @@ DATA_GOV_IN_API_KEY=your_data_gov_in_key_here
 2. **OpenWeatherMap API**: Go to [OpenWeatherMap API](https://openweathermap.org/api) → Sign up for the free **Current Weather Data & 5-Day Forecast** tier.
 3. **Data.gov.in API**: Go to [Data.gov.in](https://data.gov.in/) → Register → Request an API key under My Account → Search for the **"Current Daily Price of Various Commodities from Various Markets (Mandi)"** resource ID (`9ef84268-d588-465a-a308-a864a43d0070`).
 
-Without these keys, KisanSetu uses the deterministic Python rules and seeded dataset. The judge walkthrough is designed to run in that mode.
+Without these keys, KisanSetu uses the deterministic Python rules and seeded dataset. The judge walkthrough is designed to run in that mode. Sarvam is optional and only generates speech wording/audio; it never decides prices, matches, or negotiation state.
 
 ---
 

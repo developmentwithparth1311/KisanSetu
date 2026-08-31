@@ -15,6 +15,7 @@ import {
   DollarSign,
   TrendingUp,
 } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface LotCreationWizardProps {
   initialCropId?: string;
@@ -66,6 +67,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
   initialMandiId = 'nashik',
   onLotCreated,
 }) => {
+  const { language, l } = useLanguage();
   const [step, setStep] = useState<1 | 2 | 3>(1);
 
   // Form State
@@ -168,9 +170,9 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
       <div className="p-4 rounded-2xl bg-card border border-border shadow-subtle">
         <div className="flex items-center justify-between">
           {[
-            { num: 1, label: 'Produce Details', sub: 'फसल और वजन' },
-            { num: 2, label: 'AI Quality Scan', sub: 'गुणवत्ता जांच' },
-            { num: 3, label: 'Price Bounds', sub: 'मूल्य सीमा' },
+            { num: 1, label: l('Produce details', 'फसल विवरण', 'शेतमाल माहिती'), sub: l('Crop and weight', 'फसल और वजन', 'पीक आणि वजन') },
+            { num: 2, label: l('Quality check', 'गुणवत्ता जांच', 'गुणवत्ता तपासणी'), sub: l('Photo assessment', 'फोटो जांच', 'फोटो तपासणी') },
+            { num: 3, label: l('Your prices', 'आपके भाव', 'तुमचे भाव'), sub: l('Target and minimum', 'लक्ष्य और न्यूनतम', 'अपेक्षित आणि किमान') },
           ].map((s, idx) => (
             <React.Fragment key={s.num}>
               <div className="flex items-center gap-3">
@@ -214,13 +216,13 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
         <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              Step 1 of 3
+              {l('Step 1 of 3', '3 में से चरण 1', '3 पैकी टप्पा 1')}
             </span>
             <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
-              What produce are you selling? (फसल का विवरण)
+              {l('What produce are you selling?', 'आप कौन-सी फसल बेच रहे हैं?', 'तुम्ही कोणता शेतमाल विकत आहात?')}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Enter your crop and ready harvest volume for listing.
+              {l('Tell us the crop and quantity ready to sell.', 'बेचने के लिए तैयार फसल और मात्रा भरें।', 'विक्रीसाठी तयार पीक आणि प्रमाण भरा.')}
             </p>
           </div>
 
@@ -228,7 +230,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 p-4 rounded-2xl bg-secondary/50 border border-border">
             <div>
               <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
-                Farmer Name (किसान का नाम)
+                {l('Farmer name', 'किसान का नाम', 'शेतकऱ्याचे नाव')}
               </label>
               <input
                 type="text"
@@ -239,7 +241,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
             </div>
             <div>
               <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
-                Mobile Number (मोबाइल नंबर)
+                {l('Mobile number', 'मोबाइल नंबर', 'मोबाइल क्रमांक')}
               </label>
               <input
                 type="text"
@@ -253,14 +255,14 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
           {/* Crop Selector Chips */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase text-muted-foreground block">
-              Select Crop (फसल चुनें)
+              {l('Select crop', 'फसल चुनें', 'पीक निवडा')}
             </label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {[
-                { id: 'tomato', name: 'Tomato', icon: '🍅' },
-                { id: 'onion', name: 'Onion', icon: '🧅' },
-                { id: 'potato', name: 'Potato', icon: '🥔' },
-                { id: 'wheat', name: 'Wheat', icon: '🌾' },
+                { id: 'tomato', name: l('Tomato', 'टमाटर', 'टोमॅटो'), icon: '🍅' },
+                { id: 'onion', name: l('Onion', 'प्याज़', 'कांदा'), icon: '🧅' },
+                { id: 'potato', name: l('Potato', 'आलू', 'बटाटा'), icon: '🥔' },
+                { id: 'wheat', name: l('Wheat', 'गेहूं', 'गहू'), icon: '🌾' },
               ].map((c) => (
                 <button
                   key={c.id}
@@ -282,7 +284,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
           {/* Quantity Selector with Quick Buttons */}
           <div className="space-y-2">
             <label className="text-xs font-bold uppercase text-muted-foreground block">
-              Estimated Harvest Quantity (कुल वजन)
+              {l('Quantity ready to sell', 'बेचने के लिए तैयार मात्रा', 'विक्रीसाठी तयार प्रमाण')}
             </label>
             <div className="flex items-center gap-3">
               <input
@@ -291,11 +293,11 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
                 onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
                 className="w-36 p-3 text-2xl font-black text-foreground bg-card rounded-xl border border-border focus:border-emerald-600 text-center"
               />
-              <span className="text-base font-bold text-foreground">Quintals (क्विंटल)</span>
+              <span className="text-base font-bold text-foreground">{l('Quintals', 'क्विंटल', 'क्विंटल')}</span>
             </div>
 
             <div className="flex items-center gap-2 pt-1">
-              <span className="text-xs text-muted-foreground font-semibold">Quick set:</span>
+              <span className="text-xs text-muted-foreground font-semibold">{l('Quick choice:', 'जल्दी चुनें:', 'झटपट निवड:')}</span>
               {[20, 50, 100, 200].map((amt) => (
                 <button
                   key={amt}
@@ -320,7 +322,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               onClick={() => setStep(2)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold shadow-card transition-all active:scale-95"
             >
-              <span>Next: AI Quality Scan</span>
+              <span>{l('Next: check quality', 'अगला: गुणवत्ता जांच', 'पुढे: गुणवत्ता तपासणी')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -332,13 +334,13 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
         <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              Step 2 of 3
+              {l('Step 2 of 3', '3 में से चरण 2', '3 पैकी टप्पा 2')}
             </span>
             <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
-              AI Photo Quality Assessment (कंप्यूटर विज़न ग्रेडिंग)
+              {l('Photo quality assessment', 'फोटो से गुणवत्ता जांच', 'फोटोद्वारे गुणवत्ता तपासणी')}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Upload or scan your harvest photo to automatically certify produce quality.
+              {l('Choose a produce photo to receive an AI-assessed demo grade.', 'AI द्वारा आंका गया डेमो ग्रेड पाने के लिए फसल की फोटो चुनें।', 'AI-आधारित डेमो ग्रेडसाठी शेतमालाचा फोटो निवडा.')}
             </p>
           </div>
 
@@ -357,7 +359,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
                   <div className="w-full h-1 bg-emerald-400 laser-line animate-laser-scan" />
                   <div className="self-center bg-card/95 px-3 py-1.5 rounded-full text-foreground text-[11px] font-bold flex items-center gap-2 shadow-card">
                     <Scan className="w-3.5 h-3.5 text-emerald-600 animate-spin" />
-                    <span>AI SCANNING QUALITY...</span>
+                    <span>{l('CHECKING QUALITY…', 'गुणवत्ता जांच रहे हैं…', 'गुणवत्ता तपासत आहोत…')}</span>
                   </div>
                 </div>
               )}
@@ -366,7 +368,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               {!isScanning && aiGradeResult && (
                 <div className="absolute top-3 right-3 bg-emerald-700 text-white px-3 py-1.5 rounded-xl shadow-card flex items-center gap-1.5 text-xs font-bold">
                   <ShieldCheck className="w-4 h-4 text-emerald-200" />
-                  <span>AI-Assessed {aiGradeResult.grade}</span>
+                  <span>{l('AI-assessed', 'AI द्वारा आंका गया', 'AI-आधारित')} {aiGradeResult.grade}</span>
                 </div>
               )}
             </div>
@@ -376,29 +378,29 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               {isScanning ? (
                 <div className="p-6 rounded-2xl bg-secondary/50 border border-border flex flex-col items-center justify-center text-center min-h-[200px]">
                   <Scan className="w-8 h-8 text-emerald-600 animate-pulse mb-2" />
-                  <h4 className="text-base font-bold text-foreground">Analyzing Crop Texture & Skin...</h4>
+                  <h4 className="text-base font-bold text-foreground">{l('Checking color, texture, and visible quality…', 'रंग, बनावट और दिखाई देने वाली गुणवत्ता जांच रहे हैं…', 'रंग, पोत आणि दिसणारी गुणवत्ता तपासत आहोत…')}</h4>
                   <p className="text-xs text-muted-foreground mt-1 max-w-xs">
-                    Testing surface firmness, color distribution, and blemish indices.
+                    {l('This is an AI-assessed prototype result, not an official certificate.', 'यह AI द्वारा आंका गया प्रोटोटाइप परिणाम है, आधिकारिक प्रमाणपत्र नहीं।', 'हा AI-आधारित नमुना निकाल आहे, अधिकृत प्रमाणपत्र नाही.')}
                   </p>
                 </div>
               ) : aiGradeResult ? (
                 <div className="p-5 rounded-2xl bg-emerald-50/70 border border-emerald-200 shadow-subtle space-y-3">
                   <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2.5">
                     <div>
-                      <span className="text-[10px] uppercase font-bold text-emerald-800">Model Output</span>
+                      <span className="text-[10px] uppercase font-bold text-emerald-800">{l('Assessment result', 'जांच परिणाम', 'तपासणी निकाल')}</span>
                       <h3 className="text-xl font-bold text-emerald-950">
-                        {aiGradeResult.grade} Produce
+                        {aiGradeResult.grade} {l('produce', 'उपज', 'शेतमाल')}
                       </h3>
                     </div>
                     <div className="bg-card px-2.5 py-1 rounded-lg border border-emerald-300 text-right">
-                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">Score</span>
+                      <span className="text-[10px] uppercase font-bold text-muted-foreground block">{l('Score', 'स्कोर', 'गुण')}</span>
                       <span className="text-sm font-black text-emerald-700">{aiGradeResult.confidence}%</span>
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">Verified Attributes</span>
-                    {aiGradeResult.defects.map((d, i) => (
+                    <span className="text-[10px] uppercase font-bold text-muted-foreground block">{l('Observed attributes', 'देखे गए गुण', 'दिसलेले गुणधर्म')}</span>
+                    {(language === 'en' ? aiGradeResult.defects : language === 'hi' ? ['समान रंग', 'अच्छी बाहरी बनावट', 'कोई स्पष्ट सड़न नहीं'] : ['समान रंग', 'चांगला बाह्य पोत', 'दिसणारी कुज नाही']).map((d, i) => (
                       <div key={i} className="flex items-center gap-2 text-xs font-semibold text-emerald-900">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 flex-shrink-0" />
                         <span>{d}</span>
@@ -411,7 +413,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               {/* Sample Photo selector */}
               <div className="space-y-2">
                 <span className="text-[11px] font-bold uppercase text-muted-foreground block">
-                  Select Demo Sample or Upload
+                  {l('Choose a demo photo or upload yours', 'डेमो फोटो चुनें या अपनी फोटो डालें', 'डेमो फोटो निवडा किंवा तुमचा फोटो अपलोड करा')}
                 </span>
                 <div className="grid grid-cols-2 gap-2">
                   {SAMPLE_PHOTOS.filter((s) => s.cropId === cropId || s.cropId === 'tomato').slice(0, 2).map((sample) => (
@@ -433,7 +435,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
 
                 <label className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-dashed border-border bg-secondary/50 hover:bg-secondary cursor-pointer text-xs font-bold text-foreground transition-colors">
                   <Camera className="w-3.5 h-3.5 text-muted-foreground" />
-                  <span>Upload Custom Photo</span>
+                  <span>{l('Upload your photo', 'अपनी फोटो डालें', 'तुमचा फोटो अपलोड करा')}</span>
                   <input type="file" accept="image/*" onChange={handleCustomUpload} className="hidden" />
                 </label>
               </div>
@@ -448,7 +450,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-muted text-foreground text-xs font-bold"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back</span>
+              <span>{l('Back', 'पीछे', 'मागे')}</span>
             </button>
 
             <button
@@ -456,7 +458,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               onClick={() => setStep(3)}
               className="flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-sm font-bold shadow-card transition-all active:scale-95"
             >
-              <span>Next: Set Price Bounds</span>
+              <span>{l('Next: set your prices', 'अगला: अपने भाव तय करें', 'पुढे: तुमचे भाव ठरवा')}</span>
               <ArrowRight className="w-4 h-4" />
             </button>
           </div>
@@ -468,13 +470,13 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
         <div className="rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-6">
           <div>
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
-              Step 3 of 3
+              {l('Step 3 of 3', '3 में से चरण 3', '3 पैकी टप्पा 3')}
             </span>
             <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
-              Set Price Safeguards (मूल्य सीमा तय करें)
+              {l('Set your target and minimum price', 'लक्ष्य और न्यूनतम भाव तय करें', 'अपेक्षित आणि किमान भाव ठरवा')}
             </h2>
             <p className="text-xs text-muted-foreground mt-0.5">
-              The AI Negotiation Agent will defend these bounds in real-time.
+              {l('The system can recommend offers, but only you approve the final sale.', 'सिस्टम प्रस्ताव सुझा सकता है, लेकिन अंतिम बिक्री केवल आप मंज़ूर करेंगे।', 'प्रणाली ऑफर सुचवू शकते, पण अंतिम विक्री फक्त तुम्ही मंजूर कराल.')}
             </p>
           </div>
 
@@ -482,8 +484,8 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
             {/* Target Price */}
             <div className="p-5 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-emerald-800">Target Price (लक्ष्य मूल्य)</span>
-                <span className="text-[11px] font-semibold text-emerald-700">Ideal Rate</span>
+                <span className="text-xs uppercase font-bold text-emerald-800">{l('Target price', 'लक्ष्य भाव', 'अपेक्षित भाव')}</span>
+                <span className="text-[11px] font-semibold text-emerald-700">{l('Preferred', 'आपकी पसंद', 'तुमची पसंती')}</span>
               </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-xl font-bold text-muted-foreground">₹</span>
@@ -496,15 +498,15 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
                 <span className="absolute right-3.5 top-3 text-xs font-bold text-muted-foreground">/qtl</span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                If a buyer bids this or higher, AI immediately accepts.
+                {l('An offer at this price will be recommended for your approval.', 'इस भाव का प्रस्ताव आपकी मंज़ूरी के लिए सुझाया जाएगा।', 'या भावाची ऑफर तुमच्या मंजुरीसाठी सुचवली जाईल.')}
               </p>
             </div>
 
             {/* Floor Price */}
             <div className="p-5 rounded-2xl bg-amber-50/60 border border-amber-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="text-xs uppercase font-bold text-amber-900">Floor Price (न्यूनतम भाव)</span>
-                <span className="text-[11px] font-semibold text-amber-700">Hard Protection</span>
+                <span className="text-xs uppercase font-bold text-amber-900">{l('Minimum price', 'न्यूनतम भाव', 'किमान भाव')}</span>
+                <span className="text-[11px] font-semibold text-amber-700">{l('Protected', 'सुरक्षित', 'सुरक्षित')}</span>
               </div>
               <div className="relative">
                 <span className="absolute left-3.5 top-2.5 text-xl font-bold text-muted-foreground">₹</span>
@@ -517,7 +519,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
                 <span className="absolute right-3.5 top-3 text-xs font-bold text-muted-foreground">/qtl</span>
               </div>
               <p className="text-[11px] text-muted-foreground">
-                AI will NEVER sell below this floor price.
+                {l('The system will never accept below this price.', 'सिस्टम इस भाव से कम कभी स्वीकार नहीं करेगा।', 'प्रणाली या भावापेक्षा कमी ऑफर स्वीकारणार नाही.')}
               </p>
             </div>
           </div>
@@ -528,7 +530,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               <img src={selectedPhotoUrl} alt="" className="w-12 h-12 rounded-xl object-cover border border-border" />
               <div>
                 <h4 className="font-bold text-sm text-foreground">
-                  {quantity} Quintals of {cropId.toUpperCase()}
+                  {quantity} {l('quintals of', 'क्विंटल', 'क्विंटल')} {cropId.toUpperCase()}
                 </h4>
                 <p className="text-xs font-semibold text-emerald-700">
                   {aiGradeResult?.grade} ({aiGradeResult?.confidence}% Score)
@@ -537,7 +539,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
             </div>
 
             <div className="text-right">
-              <span className="text-[10px] text-muted-foreground uppercase font-bold block">Expected Value</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold block">{l('Expected value', 'अनुमानित मूल्य', 'अपेक्षित मूल्य')}</span>
               <span className="text-xl font-black text-foreground">
                 ₹{(targetPrice * quantity).toLocaleString('en-IN')}
               </span>
@@ -552,7 +554,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-secondary hover:bg-muted text-foreground text-xs font-bold"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back</span>
+              <span>{l('Back', 'पीछे', 'मागे')}</span>
             </button>
 
             <button
@@ -562,7 +564,7 @@ export const LotCreationWizard: React.FC<LotCreationWizardProps> = ({
               className="flex items-center gap-2 px-8 py-3.5 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-base font-bold shadow-card transition-all active:scale-95 disabled:opacity-50"
             >
               <Sparkles className="w-4 h-4 text-amber-300" />
-              <span>{isSubmitting ? 'Listing Lot...' : 'Publish Lot & Activate AI'}</span>
+              <span>{isSubmitting ? l('Creating lot…', 'लॉट बन रहा है…', 'लॉट तयार होत आहे…') : l('Publish lot and continue', 'लॉट प्रकाशित करें और आगे बढ़ें', 'लॉट प्रकाशित करा आणि पुढे जा')}</span>
             </button>
           </div>
         </div>

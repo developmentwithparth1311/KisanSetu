@@ -12,6 +12,7 @@ import {
   RefreshCw,
   Cpu,
 } from 'lucide-react';
+import { useLanguage } from './LanguageProvider';
 
 interface NegotiationSectionProps {
   initialLotId?: string | null;
@@ -26,6 +27,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
   poolContext,
   activeRole,
 }) => {
+  const { language, l } = useLanguage();
   const [lots, setLots] = useState<any[]>([]);
   const [buyers, setBuyers] = useState<any[]>([]);
   const [selectedLotId, setSelectedLotId] = useState<string | null>(initialLotId || null);
@@ -73,6 +75,32 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
   const activeLot = lots.find((l) => l.id === selectedLotId) || lots[0];
   const usesPoolContext = Boolean(poolContext && activeLot?.id === initialLotId);
   const negotiationQuantity = usesPoolContext ? poolContext!.quantity : activeLot?.quantity;
+
+  const localizedStatus = (status: string) => {
+    const statuses: Record<string, [string, string]> = {
+      'Sold': ['बिक गया', 'विक्री पूर्ण'],
+      'Recommended Accept': ['स्वीकार करने की सलाह', 'स्वीकारण्याची शिफारस'],
+      'Under Negotiation': ['मोलभाव जारी', 'वाटाघाटी सुरू'],
+      'Listed': ['लिस्ट किया गया', 'नोंदवलेले'],
+      'ACTIVE': ['सक्रिय', 'सक्रिय'],
+      'Active': ['सक्रिय', 'सक्रिय'],
+    };
+    return language === 'en' ? status : statuses[status]?.[language === 'hi' ? 0 : 1] || status;
+  };
+
+  const localizedUnit = (unit: string) =>
+    language === 'en' ? unit : unit?.toLowerCase() === 'quintal' ? 'क्विंटल' : unit;
+
+  const localizedEventMessage = (event: any) => {
+    if (language === 'en') return event.message;
+    if (event.sender_type === 'Buyer') {
+      return l('', `खरीदार ने ₹${event.amount} प्रति क्विंटल का प्रस्ताव दिया।`, `खरेदीदाराने ₹${event.amount} प्रति क्विंटलची ऑफर दिली.`);
+    }
+    if (event.sender_type === 'AI_Agent') {
+      return l('', 'सिस्टम ने किसान के न्यूनतम भाव की सुरक्षा करते हुए प्रस्ताव की जांच की।', 'प्रणालीने शेतकऱ्याचा किमान भाव सुरक्षित ठेवून ऑफर तपासली.');
+    }
+    return l('', 'किसान ने अंतिम निर्णय की पुष्टि की।', 'शेतकऱ्याने अंतिम निर्णयाची पुष्टी केली.');
+  };
 
   const handleBuyerSubmitOffer = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,7 +167,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
     return (
       <div className="rounded-3xl bg-card border border-border p-12 text-center shadow-card">
         <RefreshCw className="w-6 h-6 text-emerald-600 animate-spin mx-auto mb-2" />
-        <p className="text-xs font-semibold text-muted-foreground">Loading AI Negotiation Engine...</p>
+        <p className="text-xs font-semibold text-muted-foreground">{l('Loading negotiation…', 'मोलभाव लोड हो रहा है…', 'वाटाघाटी लोड होत आहेत…')}</p>
       </div>
     );
   }
@@ -152,17 +180,17 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200 flex items-center gap-1.5">
               <Cpu className="w-3.5 h-3.5 text-emerald-600" />
-              Autonomous Bounded Bargaining
+              {l('Protected negotiation', 'सुरक्षित मोलभाव', 'सुरक्षित वाटाघाटी')}
             </span>
             <span className="text-xs font-semibold text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-              Floor Guaranteed
+              {l('Minimum protected', 'न्यूनतम भाव सुरक्षित', 'किमान भाव सुरक्षित')}
             </span>
           </div>
           <h2 className="text-2xl font-bold tracking-tight text-foreground mt-2">
-            AI Negotiation & Demo Settlement
+            {l('Negotiate and approve your deal', 'मोलभाव करें और सौदा मंज़ूर करें', 'वाटाघाटी करा आणि व्यवहार मंजूर करा')}
           </h2>
           <p className="text-xs text-muted-foreground mt-0.5">
-            The KisanSetu AI agent recommends bounded counter-offers using AI-assessed quality grades; the farmer confirms every final sale.
+            {l('The system checks offers against your minimum price. Only the farmer can confirm the final sale.', 'सिस्टम हर प्रस्ताव को आपके न्यूनतम भाव से जांचता है। अंतिम बिक्री केवल किसान मंज़ूर करता है।', 'प्रणाली प्रत्येक ऑफर किमान भावाशी तपासते. अंतिम विक्रीला फक्त शेतकरी मंजुरी देतो.')}
           </p>
         </div>
 
@@ -171,13 +199,13 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-secondary hover:bg-muted text-xs font-bold text-foreground transition-colors self-start sm:self-auto"
         >
           <RefreshCw className="w-3.5 h-3.5" />
-          <span>Refresh</span>
+          <span>{l('Refresh', 'दोबारा देखें', 'पुन्हा पहा')}</span>
         </button>
       </div>
 
       {poolContext && (
         <div className="rounded-2xl bg-emerald-50/70 border border-emerald-200 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div><p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">Geo-Pool negotiation context</p><p className="text-xs font-semibold text-emerald-950 mt-1">Buyer requirement selected for {poolContext.quantity} qtl pooled supply.</p></div>
+          <div><p className="text-[10px] font-bold uppercase tracking-wider text-emerald-800">{l('Geo-Pool deal', 'जियो-पूल सौदा', 'जिओ-पूल व्यवहार')}</p><p className="text-xs font-semibold text-emerald-950 mt-1">{l(`Buyer selected for ${poolContext.quantity} qtl pooled supply.`, `${poolContext.quantity} क्विंटल पूल के लिए खरीदार चुना गया।`, `${poolContext.quantity} क्विंटल पूलसाठी खरेदीदार निवडला आहे.`)}</p></div>
           <span className="text-[11px] font-bold text-emerald-800">{poolContext.poolId}</span>
         </div>
       )}
@@ -210,7 +238,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                   />
                   <div>
                     <h4 className="font-bold text-sm text-foreground">
-                      {lot.cropIcon} {lot.quantity} {lot.unit}
+                      {lot.cropIcon} {lot.quantity} {localizedUnit(lot.unit)}
                     </h4>
                     <p className="text-xs text-muted-foreground">
                       {lot.farmer_name.split(' ')[0]} • {lot.mandiName}
@@ -227,13 +255,13 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                       : 'bg-secondary text-muted-foreground'
                   }`}
                 >
-                  {lot.status}
+                  {localizedStatus(lot.status)}
                 </span>
               </div>
 
               <div className="mt-3 pt-2.5 border-t border-border/80 flex items-center justify-between text-xs font-semibold">
-                <span className="text-muted-foreground">Floor: <strong className="text-amber-900">₹{lot.floor_price}</strong></span>
-                <span className="text-muted-foreground">Target: <strong className="text-emerald-800">₹{lot.target_price}</strong></span>
+                <span className="text-muted-foreground">{l('Minimum', 'न्यूनतम', 'किमान')}: <strong className="text-amber-900">₹{lot.floor_price}</strong></span>
+                <span className="text-muted-foreground">{l('Target', 'लक्ष्य', 'अपेक्षित')}: <strong className="text-emerald-800">₹{lot.target_price}</strong></span>
               </div>
             </div>
           );
@@ -248,10 +276,10 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
               <div>
                 <span className="text-xs uppercase font-bold text-emerald-800 flex items-center gap-1.5">
                   <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                  Live Bargaining Ledger
+                  {l('Offer history', 'प्रस्ताव का इतिहास', 'ऑफरचा इतिहास')}
                 </span>
                 <h3 className="text-xl font-bold tracking-tight text-foreground">
-                  {activeLot.id} — Audit Log
+                  {activeLot.id} — {l('deal record', 'सौदे का रिकॉर्ड', 'व्यवहार नोंद')}
                 </h3>
               </div>
 
@@ -262,7 +290,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                     : 'bg-amber-100 text-amber-900 border border-amber-200'
                 }`}
               >
-                {activeLot.status === 'Sold' ? '🤝 Deal Closed' : '⚡ AI Active'}
+                {activeLot.status === 'Sold' ? l('🤝 Deal closed', '🤝 सौदा पूरा', '🤝 व्यवहार पूर्ण') : l('⚡ Checking offers', '⚡ प्रस्ताव जांच जारी', '⚡ ऑफर तपासणी सुरू')}
               </span>
             </div>
 
@@ -294,17 +322,17 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                         </div>
                         <span className="font-bold text-xs text-foreground">{event.sender_name}</span>
                         <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-card text-muted-foreground border border-border">
-                          {event.action_type}
+                          {event.sender_type === 'Buyer' ? l('Buyer offer', 'खरीदार प्रस्ताव', 'खरेदीदार ऑफर') : event.sender_type === 'AI_Agent' ? l('System check', 'सिस्टम जांच', 'प्रणाली तपासणी') : l('Farmer action', 'किसान निर्णय', 'शेतकरी निर्णय')}
                         </span>
                       </div>
 
                       <span className="text-sm font-black text-foreground">
-                        ₹{event.amount?.toLocaleString('en-IN')}/{activeLot.unit}
+                        ₹{event.amount?.toLocaleString('en-IN')}/{localizedUnit(activeLot.unit)}
                       </span>
                     </div>
 
                     <p className="text-xs font-medium text-foreground/90 leading-relaxed">
-                      {event.message}
+                      {localizedEventMessage(event)}
                     </p>
                   </div>
                 );
@@ -315,10 +343,10 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
             {activeLot.status === 'Recommended Accept' && (
               <div className="p-4 rounded-2xl bg-secondary/50 border border-border flex flex-col sm:flex-row items-center justify-between gap-3">
                 <div>
-                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">Top Offer</span>
+                  <span className="text-[10px] uppercase font-bold text-muted-foreground block">{l('Best offer', 'सबसे अच्छा प्रस्ताव', 'सर्वोत्तम ऑफर')}</span>
                   <span className="text-xl font-black text-foreground">
                     ₹{(activeLot.current_offer || activeLot.target_price).toLocaleString('en-IN')}
-                    <span className="text-xs font-normal text-muted-foreground"> / {activeLot.unit}</span>
+                    <span className="text-xs font-normal text-muted-foreground"> / {localizedUnit(activeLot.unit)}</span>
                   </span>
                 </div>
 
@@ -328,7 +356,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                   className="w-full sm:w-auto px-6 py-3 bg-emerald-700 hover:bg-emerald-800 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-card transition-all active:scale-95 disabled:opacity-50"
                 >
                   <CheckCircle2 className="w-4 h-4" />
-                  <span>Confirm Deal & Record Demo Settlement</span>
+                  <span>{l('Approve final sale', 'अंतिम बिक्री मंज़ूर करें', 'अंतिम विक्री मंजूर करा')}</span>
                 </button>
               </div>
             )}
@@ -340,10 +368,10 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                   <Lock className="w-5 h-5" />
                 </div>
                 <h4 className="text-lg font-bold text-emerald-950">
-                  Simulated Settlement Recorded (₹{activeLot.escrow_amount?.toLocaleString('en-IN')})
+                  {l('Demo settlement recorded', 'डेमो सेटलमेंट दर्ज हुआ', 'डेमो सेटलमेंट नोंदवले')} (₹{activeLot.escrow_amount?.toLocaleString('en-IN')})
                 </h4>
                 <p className="text-xs text-emerald-800 max-w-sm mx-auto">
-                  Prototype settlement only: no regulated escrow or payment transfer has occurred.
+                  {l('Prototype record only. No real payment or regulated escrow occurred.', 'यह केवल प्रोटोटाइप रिकॉर्ड है। कोई असली भुगतान या एस्क्रो नहीं हुआ।', 'ही फक्त प्रोटोटाइप नोंद आहे. कोणतेही खरे पेमेंट किंवा एस्क्रो झालेले नाही.')}
                 </p>
               </div>
             )}
@@ -353,17 +381,17 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
           <div className="lg:col-span-5 rounded-3xl bg-card border border-border p-6 sm:p-8 shadow-card space-y-6">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-amber-800 bg-amber-50 px-2.5 py-1 rounded-full border border-amber-200">
-                Interactive Simulator
+                {l('Demo buyer controls', 'डेमो खरीदार नियंत्रण', 'डेमो खरेदीदार नियंत्रणे')}
               </span>
               <h3 className="text-xl font-bold tracking-tight text-foreground mt-2">
-                Simulate Buyer Offer
+                {l('Try a buyer offer', 'खरीदार प्रस्ताव आज़माएं', 'खरेदीदार ऑफर वापरून पहा')}
               </h3>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Place an offer as a wholesale buyer to see the AI counter-bargaining in action.
+                {l('Enter a demo offer to see how the minimum price is protected.', 'न्यूनतम भाव कैसे सुरक्षित रहता है यह देखने के लिए डेमो प्रस्ताव भरें।', 'किमान भाव कसा सुरक्षित राहतो हे पाहण्यासाठी डेमो ऑफर भरा.')}
               </p>
               {usesPoolContext && (
                 <p className="text-[11px] font-bold text-emerald-800 mt-2">
-                  Negotiating {negotiationQuantity} qtl pooled supply.
+                  {l(`Negotiating ${negotiationQuantity} qtl pooled supply.`, `${negotiationQuantity} क्विंटल पूल पर मोलभाव।`, `${negotiationQuantity} क्विंटल पूलवर वाटाघाटी.`)}
                 </p>
               )}
             </div>
@@ -372,7 +400,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
               {/* Buyer Selector */}
               <div>
                 <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
-                  Select Verified Buyer
+                  {l('Select verified buyer', 'सत्यापित खरीदार चुनें', 'पडताळलेला खरेदीदार निवडा')}
                 </label>
                 <select
                   value={selectedBuyerId}
@@ -381,7 +409,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                 >
                   {buyers.map((b) => (
                     <option key={b.id} value={b.id}>
-                      {b.name} (Trust: {b.trust_score}/100)
+                      {b.name} ({l('Trust', 'भरोसा', 'विश्वास')}: {b.trust_score}/100)
                     </option>
                   ))}
                 </select>
@@ -390,7 +418,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
               {/* Offer Amount */}
               <div>
                 <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
-                  Offer Amount (₹ / {activeLot.unit})
+                  {l('Offer amount', 'प्रस्तावित भाव', 'ऑफर रक्कम')} (₹ / {localizedUnit(activeLot.unit)})
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-2.5 text-lg font-bold text-muted-foreground">₹</span>
@@ -409,21 +437,21 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                     onClick={() => setBuyerBidAmount(activeLot.floor_price - 150)}
                     className="flex-1 py-1.5 px-2 bg-rose-50 hover:bg-rose-100 text-rose-800 rounded-lg text-[11px] font-bold border border-rose-200"
                   >
-                    Low-Ball (Below Floor)
+                    {l('Below minimum', 'न्यूनतम से कम', 'किमानपेक्षा कमी')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setBuyerBidAmount(Math.round((activeLot.floor_price + activeLot.target_price) / 2))}
                     className="flex-1 py-1.5 px-2 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-lg text-[11px] font-bold border border-amber-200"
                   >
-                    Mid Bid
+                    {l('Middle offer', 'बीच का प्रस्ताव', 'मधली ऑफर')}
                   </button>
                   <button
                     type="button"
                     onClick={() => setBuyerBidAmount(activeLot.target_price)}
                     className="flex-1 py-1.5 px-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-lg text-[11px] font-bold border border-emerald-200"
                   >
-                    Target Bid
+                    {l('Target offer', 'लक्ष्य प्रस्ताव', 'अपेक्षित ऑफर')}
                   </button>
                 </div>
               </div>
@@ -431,11 +459,11 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
               {/* Custom Note */}
               <div>
                 <label className="text-[11px] font-bold uppercase text-muted-foreground block mb-1">
-                  Optional Terms Note
+                  {l('Optional note', 'वैकल्पिक नोट', 'ऐच्छिक नोंद')}
                 </label>
                 <input
                   type="text"
-                  placeholder="e.g. Ready for immediate dispatch."
+                  placeholder={l('Example: Ready for immediate dispatch.', 'उदाहरण: तुरंत भेजने के लिए तैयार।', 'उदाहरण: त्वरित पाठवणीसाठी तयार.')}
                   value={buyerMessage}
                   onChange={(e) => setBuyerMessage(e.target.value)}
                   className="w-full p-2.5 bg-secondary/50 rounded-xl border border-border text-xs text-foreground focus:border-emerald-600 focus:ring-0"
@@ -448,7 +476,7 @@ export const NegotiationSection: React.FC<NegotiationSectionProps> = ({
                 className="w-full py-3.5 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-2 shadow-card transition-all active:scale-95 disabled:opacity-50"
               >
                 <Send className="w-4 h-4" />
-                <span>{isBargaining ? 'AI Agent Analyzing Offer...' : 'Submit Offer & Trigger AI Bargain'}</span>
+                <span>{isBargaining ? l('Checking offer…', 'प्रस्ताव जांच रहे हैं…', 'ऑफर तपासत आहोत…') : l('Submit demo offer', 'डेमो प्रस्ताव भेजें', 'डेमो ऑफर पाठवा')}</span>
               </button>
             </form>
           </div>
